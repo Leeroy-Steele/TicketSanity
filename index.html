@@ -2,12 +2,17 @@
 <html lang="en">
 
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-    <script defer src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+ -->
+
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flowbite"></script>
+
 
     <!-- Script for fetching and sorting tickets -->
     <script defer>
@@ -67,10 +72,10 @@
                 sortedTickets.forEach((ticket, index) => {
 
                     // Filter out tickets that are not relevant to me
-                    if (ticket.boardName === "NZPA Service Board" ||
-                        ticket.boardName === "CSP Portal" ||
-                        ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === 515) ||
-                        ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === 103880)
+                    if (ticket.boardName === PrimaryBoard1.BoardName ||
+                        ticket.boardName === PrimaryBoard2.BoardName ||
+                        ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === Technician.LancomButtonId) ||
+                        ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === Technician.DD4DDId)
                     ) {
                         let tableRow = `
                             <tr id="row-${index}" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
@@ -112,7 +117,6 @@
 
     <!-- Script for manipulating table / ticket results -->
     <script>
-
 
         // Sort tickets by Priority / board / Status
         let sortAscendingOrder = true;
@@ -173,8 +177,6 @@
             sortAscendingOrder = !sortAscendingOrder
         }
 
-
-
         // for the tick option on each ticket row. Changes image to tick / box
         function tickBox(divID) {
             const targetImg = document.getElementById(`${divID}`)
@@ -186,8 +188,6 @@
                 targetImg.src = 'https://img.icons8.com/ios/30/checked-2--v3.png';
             }
         }
-
-
 
         function hideRowsWithStatus(statusToHide) {
 
@@ -211,20 +211,33 @@
                 });
             } else if (statusToHide === "Waiting on Dev") {
                 console.log("Waiting on Dev")
+
                 Array.from(rows).forEach(row => {
-                    const statusCell = row.cells[6]; // Index of the Status column
-                    if (statusCell &&
-                        statusCell.innerText.trim() === "Waiting on Development"
-                    ) {
-                        row.style.display = "none"; // Hide the row
+                    if (row.cells.length > 10) {
+
+                        const statusCell = row.cells[6]; // Index of the Status column
+                        if (statusCell &&
+                            statusCell.innerText.trim() === "Waiting on Development" ||
+                            statusCell.innerText.trim() === "Waiting on Developer" ||
+                            statusCell.innerText.trim() === "Waiting on Development - Backlog" ||
+                            statusCell.innerText.trim() === "Waiting on Development - In Progress"
+                        ) {
+                            row.style.display = "none"; // Hide the row
+                        }
+
+
                     }
+
                 });
             } else if (statusToHide === "Waiting on Dev Only") {
-                console.log("Waiting on Dev")
+                console.log("Waiting on Dev only")
                 Array.from(rows).forEach(row => {
                     const statusCell = row.cells[6]; // Index of the Status column
                     if (statusCell &&
-                        statusCell.innerText.trim() !== "Waiting on Development"
+                        statusCell.innerText.trim() !== "Waiting on Development" &&
+                        statusCell.innerText.trim() !== "Waiting on Developer" &&
+                        statusCell.innerText.trim() !== "Waiting on Development - Backlog" &&
+                        statusCell.innerText.trim() !== "Waiting on Development - In Progress"
                     ) {
                         row.style.display = "none"; // Hide the row
                     }
@@ -233,27 +246,28 @@
         }
 
         function hideTicketsNotFromBoard(boardToShow) {
+            unhideAll()
 
             const table = document.getElementById("resultsTable");
             const tbody = table.tBodies[0];
             const rows = tbody?.rows || [];
 
-            if (boardToShow === "NZPA") {
+            if (boardToShow === PrimaryBoard1.BoardName) {
 
                 Array.from(rows).forEach(row => {
                     const boardCell = row.cells[5]; // Index of the Status column
                     if (boardCell &&
-                        boardCell.innerText.trim() !== "NZPA Service Board"
+                        boardCell.innerText.trim() !== PrimaryBoard1.BoardName
                     ) {
                         row.style.display = "none"; // Hide the row
                     }
                 });
-            } else if (boardToShow === "CSP Portal") {
+            } else if (boardToShow === PrimaryBoard2.BoardName) {
 
                 Array.from(rows).forEach(row => {
                     const boardCell = row.cells[5]; // Index of the Status column
                     if (boardCell &&
-                        boardCell.innerText.trim() !== "CSP Portal"
+                        boardCell.innerText.trim() !== PrimaryBoard2.BoardName
                     ) {
                         row.style.display = "none"; // Hide the row
                     }
@@ -327,12 +341,10 @@
             newRow.id = "row-" + randomNumber
 
             newRow.innerHTML = `
-                <td colspan="2" class="p-1 border border-gray-200"><input type="text" placeholder="Task" class="w-full border rounded p-1"></td>
-                <td class="py-1 px-2 text-center jira-columns border border-gray-200"><input placeholder="..." type="text" class="w-full border rounded p-1"></td>
-                <td colspan="2" class="py-1 px-2 text-center jira-columns border border-gray-200"><input placeholder="..." type="text" class="w-full border rounded p-1"></td>
-                <td class="py-1 px-2 text-center jira-columns border border-gray-200"><input placeholder="..." type="text" class="w-full border rounded p-1"></td>
-                <td style="width: 220px;" class="p-1 text-center border border-gray-200"><input type="text" placeholder="..." class="w-full border rounded p-1"></td>
+                <td colspan="6" class="p-1 border border-gray-200"><input type="text" placeholder="Task" class="w-full border rounded p-1"></td>
                 <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input style="width: 35px; "type="text" placeholder="..." class="border rounded p-1"></td>
+                <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input style="width: 35px; "type="text" placeholder="..." class="border rounded p-1"></td>
+
 
                 <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -411,17 +423,17 @@
 
 <body>
     <div class="flex justify-center gap-4 my-4">
-        <h2 class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
+        <h2 id="titleH2" class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
         <button onclick="addRow()" class="px-4 bg-green-500 text-white rounded hover:bg-green-600"><b>Add
                 Row</b></button>
         <button onclick="unhideAll()" class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide
                 All</b></button>
         <button onclick="hideRowsWithStatus('Waiting on Dev Only')"
             class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev Only</b></button>
-        <button onclick="hideTicketsNotFromBoard('NZPA')"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>NZPA Only</b></button>
-        <button onclick="hideTicketsNotFromBoard('CSP Portal')"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>CSP Only</b></button>
+        <button id="hideTicketsNotFromBoardButton1" onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)"
+            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
+        <button id="hideTicketsNotFromBoardButton2" onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)"
+            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
         <button onclick="hideRowsWithStatus('Waiting on Client')"
             class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
                 Waiting on Client</b></button>
@@ -457,6 +469,79 @@
         </table>
     </div>
 
+    <!-- Script for setting board preferences -->
+    <script defer>
+
+        // ////////////////////// Lee
+        // const Technician = {
+        //     Name:"Lee",
+        //     LancomButtonId:515,
+        //     DD4DDId:103880
+        // }
+        // const PrimaryBoard1 = {
+        //     BoardName: 'NZPA Service Board',
+        //     ButtonText: 'NZPA Only'
+        // }
+        // const PrimaryBoard2 = {
+        //     BoardName: 'CSP Portal',
+        //     ButtonText: 'CSP Only'
+        // }
+
+
+        // //////////////////// Leo
+        // const Technician = {
+        //     Name:"Leo",
+        //     LancomButtonId:532,
+        //     DD4DDId:105890
+        // }
+        // const PrimaryBoard1 = {
+        //     BoardName: 'Prompt Service Board',
+        //     ButtonText: 'Prompt Only'
+        // }
+        // const PrimaryBoard2 = {
+        //     BoardName: 'HSE Connect Service Board',
+        //     ButtonText: 'HSE Only'
+        // }
+
+        // //////////////////// Aaron
+        // const Technician = {
+        //     Name: "Aaron",
+        //     LancomButtonId: 278,
+        //     DD4DDId: 10096
+        // }
+        // const PrimaryBoard1 = {
+        //     BoardName: 'Application Support',
+        //     ButtonText: 'App Support Only'
+        // }
+        // const PrimaryBoard2 = {
+        //     BoardName: 'TimeSanity Service Board',
+        //     ButtonText: 'TimeSanity Only'
+        // }
+
+
+        //////////////////// Collin
+        const Technician = {
+            Name:"Collin",
+            LancomButtonId:602,
+            DD4DDId:105980
+        }
+        const PrimaryBoard1 = {
+            BoardName: 'DeskDirector Support',
+            ButtonText: 'DD4DD Only'
+        }
+        const PrimaryBoard2 = {
+            BoardName: '',
+            ButtonText: 'Clear All'
+        }
+
+        // update Dom with board preferences:
+        document.getElementById('hideTicketsNotFromBoardButton1').innerHTML = `<b>${PrimaryBoard1.ButtonText}</b>`
+        document.getElementById('hideTicketsNotFromBoardButton2').innerHTML = `<b>${PrimaryBoard2.ButtonText}</b>`
+        document.getElementById('titleH2').innerHTML = `<b>${Technician.Name}'s Dashboard</b>`
+
+
+
+    </script>
 
 </body>
 
