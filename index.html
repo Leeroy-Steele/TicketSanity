@@ -10,6 +10,20 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite"></script>
     <script defer>
 
+        // Fetch JSON file and process its content
+        fetch('./preferences.json') // './' indicates the same directory as the HTML file
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json(); // Parse the JSON
+            })
+            .then(data => {
+                console.log(data); // Log the data for debugging
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+
+
         // for the tick option on each ticket row. Changes image to tick / box
         function tickBox(divID) {
             const targetImg = document.getElementById(`${divID}`)
@@ -290,6 +304,7 @@
                         statusCell.innerText.trim() === "Waiting on client" ||
                         statusCell.innerText.trim() === "Waiting on Client" ||
                         statusCell.innerText.trim() === "No response from client" ||
+                        statusCell.innerText.trim() === "No Response from client" ||
                         statusCell.innerText.trim() === "Waiting Client Response"
                     ) {
                         row.style.display = "none"; // Hide the row
