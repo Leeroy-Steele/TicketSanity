@@ -8,34 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flowbite"></script>
+
+    <!-- Script for fetching and sorting tickets -->
     <script defer>
-
-        // Fetch JSON file and process its content
-        fetch('./preferences.json') // './' indicates the same directory as the HTML file
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json(); // Parse the JSON
-            })
-            .then(data => {
-                console.log(data); // Log the data for debugging
-            })
-            .catch(error => console.error('Error loading JSON:', error));
-
-
-        // for the tick option on each ticket row. Changes image to tick / box
-        function tickBox(divID) {
-            const targetImg = document.getElementById(`${divID}`)
-
-            // Append the image to the div
-            if (targetImg.src === "https://img.icons8.com/ios/30/checked-2--v3.png") {
-                targetImg.src = 'https://img.icons8.com/color/30/checked-checkbox.png';
-            } else {
-                targetImg.src = 'https://img.icons8.com/ios/30/checked-2--v3.png';
-            }
-        }
-
 
         // Fetch live tickets from PA - https://make.powerautomate.com/environments/2e21e621-fcf3-eae1-a4d1-9e02b3152fc8/flows/6bfb118f-722a-44fa-9c84-1dfddefa790c/details
         const requestOptions = {
@@ -133,6 +108,10 @@
                 })
             })
             .catch((error) => console.error(error));
+    </script>
+
+    <!-- Script for manipulating table / ticket results -->
+    <script>
 
 
         // Sort tickets by Priority / board / Status
@@ -196,99 +175,19 @@
 
 
 
-    </script>
-    <style>
-        h2 {
-            color: #f1f1f1;
+        // for the tick option on each ticket row. Changes image to tick / box
+        function tickBox(divID) {
+            const targetImg = document.getElementById(`${divID}`)
+
+            // Append the image to the div
+            if (targetImg.src === "https://img.icons8.com/ios/30/checked-2--v3.png") {
+                targetImg.src = 'https://img.icons8.com/color/30/checked-checkbox.png';
+            } else {
+                targetImg.src = 'https://img.icons8.com/ios/30/checked-2--v3.png';
+            }
         }
 
-        body {
-            background-image: url("https://i.imgur.com/WNqOEoF.png");
-            background-size: cover;
-            /* background: linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url('https://i.imgur.com/wUousYb.png'); */
-        }
 
-        tr.dragging {
-            opacity: 0.5;
-            background: #f1f1f1;
-        }
-
-        table {
-            table-layout: fixed;
-            width: 100%;
-            background-color: whitesmoke;
-        }
-
-        .jira-columns {
-            width: 100px;
-        }
-
-        .meeting-notes {
-            width: 400px;
-        }
-
-        .action-buttons button {
-            width: 90px;
-            padding: 5px;
-            white-space: nowrap;
-        }
-
-        tr:hover {
-            background-color: rgba(240, 240, 240, 0.8);
-        }
-    </style>
-</head>
-
-<body>
-    <div class="flex justify-center gap-4 my-4">
-        <h2 class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
-        <button onclick="addRow()" class="px-4 bg-green-500 text-white rounded hover:bg-green-600"><b>Add
-                Row</b></button>
-        <button onclick="unhideAll()" class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide
-                All</b></button>
-        <button onclick="hideRowsWithStatus('Waiting on Dev Only')"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev Only</b></button>
-        <button onclick="hideTicketsNotFromBoard('NZPA')"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>NZPA Only</b></button>
-            <button onclick="hideTicketsNotFromBoard('CSP Portal')"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>CSP Only</b></button>
-        <button onclick="hideRowsWithStatus('Waiting on Client')"
-            class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
-                Waiting on Client</b></button>
-        <button onclick="hideRowsWithStatus('Waiting on Dev')"
-            class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
-                Waiting on Dev</b></button>
-    </div>
-    <div class="p-1 m-1">
-        <table id="resultsTable"
-            class="table-auto border-collapse border border-gray-300 w-full mx-auto text-sm text-gray-700">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="py-1 px-2 border border-gray-300">Ticket Name</th>
-                    <th style="max-width: 180px;" class="py-1 px-2 border border-gray-300">Contact</th>
-                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Tech Portal</th>
-                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 1</th>
-                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 2</th>
-                    <th onclick="sortTableRows('Board')"
-                        class="py-1 px-2 text-center border border-gray-300 jira-columns">
-                        Board</th>
-                    <th onclick="sortTableRows('Status')" class="py-1 px-1 text-center border border-gray-300">Status
-                    </th>
-                    <th onclick="sortTableRows('P')" class="py-1 px-1 text-center border border-gray-300">P</th>
-                    <th class="py-1 px-2 text-center meeting-notes border border-gray-300">Notes</th>
-                    <th class="py-1 px-2 text-center border border-gray-300">Actions</th>
-                    <th style="display: none">Board</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-
-
-            </tbody>
-        </table>
-    </div>
-
-
-    <script>
 
         function hideRowsWithStatus(statusToHide) {
 
@@ -387,11 +286,7 @@
             link.click();
         }
 
-
-
-
-
-
+        // Drag and drop table rows 
         let draggedRow = null;
 
         function drag(ev) {
@@ -420,6 +315,7 @@
             draggedRow.classList.remove('dragging');
         }
 
+        // Manually add table rows
         function addRow() {
             const tableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
             const newRow = document.createElement('tr');
@@ -470,6 +366,98 @@
             rows.forEach(row => row.style.display = '');
         }
     </script>
+
+    <style>
+        h2 {
+            color: #f1f1f1;
+        }
+
+        body {
+            background-image: url("https://i.imgur.com/WNqOEoF.png");
+            background-size: cover;
+            /* background: linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url('https://i.imgur.com/wUousYb.png'); */
+        }
+
+        tr.dragging {
+            opacity: 0.5;
+            background: #f1f1f1;
+        }
+
+        table {
+            table-layout: fixed;
+            width: 100%;
+            background-color: whitesmoke;
+        }
+
+        .jira-columns {
+            width: 100px;
+        }
+
+        .meeting-notes {
+            width: 400px;
+        }
+
+        .action-buttons button {
+            width: 90px;
+            padding: 5px;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: rgba(240, 240, 240, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex justify-center gap-4 my-4">
+        <h2 class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
+        <button onclick="addRow()" class="px-4 bg-green-500 text-white rounded hover:bg-green-600"><b>Add
+                Row</b></button>
+        <button onclick="unhideAll()" class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide
+                All</b></button>
+        <button onclick="hideRowsWithStatus('Waiting on Dev Only')"
+            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev Only</b></button>
+        <button onclick="hideTicketsNotFromBoard('NZPA')"
+            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>NZPA Only</b></button>
+        <button onclick="hideTicketsNotFromBoard('CSP Portal')"
+            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>CSP Only</b></button>
+        <button onclick="hideRowsWithStatus('Waiting on Client')"
+            class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
+                Waiting on Client</b></button>
+        <button onclick="hideRowsWithStatus('Waiting on Dev')"
+            class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
+                Waiting on Dev</b></button>
+    </div>
+    <div class="p-1 m-1">
+        <table id="resultsTable"
+            class="table-auto border-collapse border border-gray-300 w-full mx-auto text-sm text-gray-700">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-1 px-2 border border-gray-300">Ticket Name</th>
+                    <th style="max-width: 180px;" class="py-1 px-2 border border-gray-300">Contact</th>
+                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Tech Portal</th>
+                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 1</th>
+                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 2</th>
+                    <th onclick="sortTableRows('Board')"
+                        class="py-1 px-2 text-center border border-gray-300 jira-columns">
+                        Board</th>
+                    <th onclick="sortTableRows('Status')" class="py-1 px-1 text-center border border-gray-300">Status
+                    </th>
+                    <th onclick="sortTableRows('P')" class="py-1 px-1 text-center border border-gray-300">P</th>
+                    <th class="py-1 px-2 text-center meeting-notes border border-gray-300">Notes</th>
+                    <th class="py-1 px-2 text-center border border-gray-300">Actions</th>
+                    <th style="display: none">Board</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+
+
+            </tbody>
+        </table>
+    </div>
+
+
 </body>
 
 </html>
