@@ -6,79 +6,143 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-    <script defer src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
- -->
-
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flowbite"></script>
 
 
-    <!-- Script for fetching and sorting tickets -->
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+
+
+    <!-- Script for fetching and sorting ticket tasks from PA-->
     <script defer>
 
-        // Fetch live tickets from PA - https://make.powerautomate.com/environments/2e21e621-fcf3-eae1-a4d1-9e02b3152fc8/flows/6bfb118f-722a-44fa-9c84-1dfddefa790c/details
-        const requestOptions = {
-            method: "GET",
-            redirect: "follow"
-        };
+        let user, password, LancomButtonId, DD4DDId, PrimaryBoard1, PrimaryBoard2, returnHSEIssues, returnCSPIssues, returnPromptIssues
 
-        fetch("https://prod-18.australiasoutheast.logic.azure.com:443/workflows/8ede7348e08746df81513d8b45912c0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9ThA8L_C0klVuBaYpZ_kXvhoHHYLmBVlHnRgFWIxvJo", requestOptions)
-            .then((response) => response.json())
-            .then((result) => {
+        // Clear old fetched tasks first. Leave manual tasks
+        function removeRowsExceptHeaderAndManualTask() {
+            const table = document.getElementById('resultsTable');
+            const rows = table.rows; // Live HTMLCollection of table rows
+            let i = 1; // Start at 1 to skip the header row
 
-                // Refactor tickets payload to include jira links
-                const sortedTickets = result.map((ticket) => {
-                    let CIJiraLink = ticket.tags.find((tag) => tag.startsWith("cis")) || "N/A";
-                    CIJiraLink = CIJiraLink.toUpperCase();
-                    let CIPacTicket = ticket.tags.find((tag) => tag.startsWith("pac")) || "N/A";
-                    CIPacTicket = CIPacTicket.toUpperCase();
-                    let LancomCSPJiraLink = ticket.tags.find((tag) => {
-                        if (tag.startsWith("cspp")) { return true }
-                        else if (tag.startsWith("pbr")) { return true }
-                        else return false
+            while (i < rows.length) {
+                const row = rows[i];
+                // Check if the row has the class 'manualTask'
+                if (row.classList.contains('manualTask')) {
+                    i++; // Skip this row and move to the next
+                } else {
+                    table.deleteRow(i); // Delete the row (index does not increment since rows shift)
+                }
+            }
+        }
+
+        function getAllTasks() {
+            // Remove stale tasks
+            removeRowsExceptHeaderAndManualTask()
+            // Add spinner
+            document.getElementById('spinnerDiv').style.display = 'block'
+
+            // Fetch live tickets from PA - https://make.powerautomate.com/environments/2e21e621-fcf3-eae1-a4d1-9e02b3152fc8/flows/6bfb118f-722a-44fa-9c84-1dfddefa790c/details
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            const raw = JSON.stringify({
+                "User": user,
+                "PW": password
+            });
+
+            const requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                body: raw,
+                redirect: "follow"
+            };
+
+            fetch("https://prod-18.australiasoutheast.logic.azure.com:443/workflows/8ede7348e08746df81513d8b45912c0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9ThA8L_C0klVuBaYpZ_kXvhoHHYLmBVlHnRgFWIxvJo", requestOptions)
+                .then((response) => response.json())
+                .then((result) => {
+
+                    LancomButtonId = result.memberDetails.LancomButtonId
+                    DD4DDId = result.memberDetails.DD4DDId
+                    PrimaryBoard1 = result.memberBoards[0]
+                    PrimaryBoard2 = result.memberBoards[1]
+                    returnHSEIssues  = result.memberJiraBoardPreferences.returnHSEIssues
+                    returnCSPIssues  = result.memberJiraBoardPreferences.returnCSPIssues
+                    returnPromptIssues  = result.memberJiraBoardPreferences.returnPromptIssues
+
+                    // update Dom with board preferences:
+                    document.getElementById('hideTicketsNotFromBoardButton1').innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`
+                    document.getElementById('hideTicketsNotFromBoardButton2').innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`
+                    document.getElementById('spinnerDiv').style.display = 'none'
+
+                    // Refactor jira issues payload
+                    const jiraResults = result.jiraResults.map((issue) => {
+
+                        const LancomJiraURL = `https://lancom.atlassian.net/browse/${issue.key}`
+
+                        return {
+                            ticketName: `<a href="${LancomJiraURL}" class="text-blue-600 hover:underline">${issue.key}</a>`,
+                            techPortalLink: "",
+                            contactName: issue.fields.assignee !== null ? issue.fields.assignee.displayName : "",
+                            boardName: issue.key.startsWith("PBR") ? "Prompt" : issue.key.startsWith("CSP") ? "CSP Portal" : "HSE Connect",
+                            priorityName: issue.fields.priority !== null ? issue.fields.priority.id : "",
+                            assignedMembers: null,
+                            LancomJiraURL: LancomJiraURL,
+                            status: issue.fields.status.name,
+                        };
                     })
 
-                    LancomCSPJiraLink !== undefined ? LancomCSPJiraLink = LancomCSPJiraLink.toUpperCase() : LancomCSPJiraLink = "N/A";
+                    // Refactor tickets payload to include jira links
+                    const sortedTickets = result.ticketResults.map((ticket) => {
+                        let CIJiraLink = ticket.tags.find((tag) => tag.startsWith("cis")) || "N/A";
+                        CIJiraLink = CIJiraLink.toUpperCase();
+                        let CIPacTicket = ticket.tags.find((tag) => tag.startsWith("pac")) || "N/A";
+                        CIPacTicket = CIPacTicket.toUpperCase();
+                        let LancomCSPJiraLink = ticket.tags.find((tag) => {
+                            if (tag.startsWith("cspp")) { return true }
+                            else if (tag.startsWith("pbr")) { return true }
+                            else if (tag.startsWith("hse")) { return true }
+                            else return false
+                        })
 
-                    return {
-                        ticketName: `<a href="https://cloud.lancom.tech/portal/v2/groups/my-tickets/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.name.substring(0, 65)}</a>`,
-                        techPortalLink: ticket.board.name === "DeskDirector Support" ?
-                            `<a href="https://support.deskdirector.com/tech/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.id}</a>`
-                            :
-                            `<a href="https://cloud.lancom.tech/tech/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.id}</a>`
-                        ,
-                        contactName: ticket.contact !== null ? ticket.contact.name : "",
-                        boardName: ticket.board.name,
-                        priorityName: ticket.priority.name.substring(9, 10),
-                        assignedMembers: ticket.assignedMembers,
-                        CIJiraLink:
-                            CIJiraLink !== "N/A"
-                                ? `<a href="https://cloudinsurance.atlassian.net/servicedesk/customer/portal/1/${CIJiraLink}" class="text-blue-600 hover:underline">${CIJiraLink}</a>`
-                                : null,
-                        LancomCSPJiraLink:
-                            LancomCSPJiraLink !== "N/A"
-                                ? `<a href="https://lancom.atlassian.net/browse/${LancomCSPJiraLink}" class="text-blue-600 hover:underline">${LancomCSPJiraLink}</a>`
-                                : null,
-                        pacTicketURL:
-                            CIPacTicket !== "N/A"
-                                ? `<a href="https://cloudinsurance.atlassian.net/browse/${CIPacTicket}" class="text-blue-600 hover:underline">${CIPacTicket}</a>`
-                                : null,
-                        status: ticket.status.name,
-                    };
-                })
+                        LancomCSPJiraLink !== undefined ? LancomCSPJiraLink = LancomCSPJiraLink.toUpperCase() : LancomCSPJiraLink = "N/A";
+                        return {
+                            ticketName: `<a href="https://cloud.lancom.tech/portal/v2/groups/my-tickets/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.name.substring(0, 65)}</a>`,
+                            techPortalLink: ticket.board.name === "DeskDirector Support" ?
+                                `<a href="https://support.deskdirector.com/tech/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.id}</a>`
+                                :
+                                `<a href="https://cloud.lancom.tech/tech/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.id}</a>`
+                            ,
+                            contactName: ticket.contact !== null ? ticket.contact.name : "",
+                            boardName: ticket.board.name ==="Prompt Service Board" ? ticket.board.name.substring(0, 6):ticket.board.name==="HSE Connect Service Board"?ticket.board.name.substring(0, 11):ticket.board.name,
+                            priorityName: ticket.priority.name.substring(9, 10),
+                            assignedMembers: ticket.assignedMembers,
+                            CIJiraLink:
+                                CIJiraLink !== "N/A"
+                                    ? `<a href="https://cloudinsurance.atlassian.net/servicedesk/customer/portal/1/${CIJiraLink}" class="text-blue-600 hover:underline">${CIJiraLink}</a>`
+                                    : null,
+                            LancomCSPJiraLink:
+                                LancomCSPJiraLink !== "N/A"
+                                    ? `<a href="https://lancom.atlassian.net/browse/${LancomCSPJiraLink}" class="text-blue-600 hover:underline">${LancomCSPJiraLink}</a>`
+                                    : null,
+                            pacTicketURL:
+                                CIPacTicket !== "N/A"
+                                    ? `<a href="https://cloudinsurance.atlassian.net/browse/${CIPacTicket}" class="text-blue-600 hover:underline">${CIPacTicket}</a>`
+                                    : null,
+                            status: ticket.status.name,
+                        };
+                    })
 
-                // Generate the HTML table rows
-                sortedTickets.forEach((ticket, index) => {
+                    // Generate the HTML table rows from tickets payload
+                    sortedTickets.forEach((ticket, index) => {
 
-                    // Filter out tickets that are not relevant to me
-                    if (ticket.boardName === PrimaryBoard1.BoardName ||
-                        ticket.boardName === PrimaryBoard2.BoardName ||
-                        ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === Technician.LancomButtonId) ||
-                        ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === Technician.DD4DDId)
-                    ) {
-                        let tableRow = `
-                            <tr id="row-${index}" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
+                        // Filter out tickets that are not relevant to me
+                        if (ticket.boardName === PrimaryBoard1.BoardName ||
+                            ticket.boardName === PrimaryBoard2.BoardName ||
+                            ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === LancomButtonId) ||
+                            ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === DD4DDId)
+                        ) {
+                            let tableRow = `
+                            <tr id="row-${index}" class="ticketRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
                                 <td class="py-1 px-2 border border-gray-200">${ticket.ticketName}</td>
                                 <td style="max-width: 180px;" class="py-1 px-2 border border-gray-200">${ticket.contactName}</td>
                                 <td class="py-1 px-2 text-center border border-gray-200">${ticket.techPortalLink}</td>
@@ -98,21 +162,78 @@
                                 </td>
 
                                 <td class="py-1 px-2 text-center border border-gray-200 action-buttons">
-                                    <button onclick="deleteRow(${index})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
+                                    <button onclick="deleteRow(${index})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
                                     <button onclick="hideRow(${index})" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
                                 </td>
-                                <th style="display: none" id>${ticket.boardName}</th>
+
+                            </tr>
+                        `
+                            const tableBody = document.getElementById("tableBody"); // Locate the <tbody>
+
+                            // Append the row to the table body
+                            tableBody.insertAdjacentHTML("beforeend", tableRow);
+
+                        }
+                    })
+
+                    // Generate the HTML table rows from jira payload
+                    jiraResults.forEach((issue, index) => {
+                        if( issue.boardName==="Prompt" && returnPromptIssues ||
+                            issue.boardName==="CSP Portal" && returnCSPIssues ||
+                            issue.boardName==="HSE Connect" && returnHSEIssues
+                        ){
+
+                            let tableRow = `
+                            <tr id="row-${index + 1000}" class="jiraRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
+                                <td class="py-1 px-2 border border-gray-200"> Jira Issue: ${issue.ticketName}</td>
+                                <td style="max-width: 180px;" class="py-1 px-2 border border-gray-200">${issue.contactName}</td>
+                                <td class="py-1 px-2 text-center border border-gray-200">${issue.techPortalLink}</td>
+                                <td class="py-1 px-2 text-center border border-gray-200">${issue.ticketName}</td>
+                                <td class="py-1 px-2 text-center border border-gray-200"></td>
+                                <td class="py-1 px-2 text-center border border-gray-200">${issue.boardName || ""}</td>
+                                <td class="py-1 px-1 text-center border border-gray-200">${issue.status}</td>
+                                <td style="width: 50px;" class="py-1 px-1 text-center border border-gray-200">${issue.priorityName}</td>
+                                
+                                <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div onclick="tickBox('tickBoxDiv${index + 1000}')">
+                                            <img id="tickBoxDiv${index + 1000}" width="30" height="30" src="https://img.icons8.com/ios/30/checked-2--v3.png" alt="checked-2--v3" />
+                                        </div>
+                                        <input type="text" class="w-full p-1 border rounded" placeholder="..." />
+                                    </div>
+                                </td>
+
+                                <td class="py-1 px-2 text-center border border-gray-200 action-buttons">
+                                    <button onclick="deleteRow(${index + 1000})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+                                    <button onclick="hideRow(${index + 1000})" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
+                                </td>
+                                
                             </tr>
                         `
                         const tableBody = document.getElementById("tableBody"); // Locate the <tbody>
 
+                        // remove spinner
+                        document.getElementById('spinnerDiv').style.display = 'none'
+
                         // Append the row to the table body
                         tableBody.insertAdjacentHTML("beforeend", tableRow);
 
-                    }
+
+                        }
+
+                    })
+
                 })
-            })
-            .catch((error) => console.error(error));
+                .catch((error) => {
+                    console.error(error);                
+                    // remove spinner
+                    document.getElementById('spinnerDiv').style.display = 'none'
+                });
+
+
+
+        }
+
     </script>
 
     <!-- Script for manipulating table / ticket results -->
@@ -189,6 +310,33 @@
             }
         }
 
+        // Hide by source (Jirta / Tickets)
+        function hideRowsbyDataSource(source) {
+            unhideAll()
+            const table = document.getElementById("resultsTable");
+            const tbody = table.tBodies[0];
+            const rows = tbody?.rows || [];
+
+            if (source === "Lancom Button") {
+                console.log("hide Lancom Button rows")
+                Array.from(rows).forEach(row => {
+                    if (row.classList.contains('ticketRow')){
+                        row.style.display = "none"; // Hide the row
+                    }
+                });
+            } else if (source === "Jira") {
+                console.log("Hide Jira rows")
+
+                Array.from(rows).forEach(row => {
+                    if (row.classList.contains('jiraRow')){
+                        row.style.display = "none"; // Hide the row
+                    }
+                });
+            } 
+        }
+
+
+        // hide by Status
         function hideRowsWithStatus(statusToHide) {
 
             const table = document.getElementById("resultsTable");
@@ -210,11 +358,12 @@
                     }
                 });
             } else if (statusToHide === "Waiting on Dev") {
-                console.log("Waiting on Dev")
+                console.log("Hide waiting on dev tasks")
 
                 Array.from(rows).forEach(row => {
-                    if (row.cells.length > 10) {
-
+                    console.log(row.cells.length)
+                    if (row.cells.length > 9) {
+                        console.log("row length ok")
                         const statusCell = row.cells[6]; // Index of the Status column
                         if (statusCell &&
                             statusCell.innerText.trim() === "Waiting on Development" ||
@@ -223,6 +372,7 @@
                             statusCell.innerText.trim() === "Waiting on Development - In Progress"
                         ) {
                             row.style.display = "none"; // Hide the row
+                            console.log("hiding row")
                         }
 
 
@@ -230,6 +380,7 @@
 
                 });
             } else if (statusToHide === "Waiting on Dev Only") {
+                unhideAll()
                 console.log("Waiting on Dev only")
                 Array.from(rows).forEach(row => {
                     const statusCell = row.cells[6]; // Index of the Status column
@@ -257,7 +408,7 @@
                 Array.from(rows).forEach(row => {
                     const boardCell = row.cells[5]; // Index of the Status column
                     if (boardCell &&
-                        boardCell.innerText.trim() !== PrimaryBoard1.BoardName
+                        boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard1.BoardName.substring(0, 6)
                     ) {
                         row.style.display = "none"; // Hide the row
                     }
@@ -267,7 +418,7 @@
                 Array.from(rows).forEach(row => {
                     const boardCell = row.cells[5]; // Index of the Status column
                     if (boardCell &&
-                        boardCell.innerText.trim() !== PrimaryBoard2.BoardName
+                        boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard2.BoardName.substring(0, 6)
                     ) {
                         row.style.display = "none"; // Hide the row
                     }
@@ -275,30 +426,6 @@
             }
         }
 
-        // new save manual task. Needs to be finished
-        function saveRow(index) {
-            // Select the row data using the index
-            const row = document.getElementById(`row-${index}`);
-            const cells = row.querySelectorAll('td');
-
-            // Extract the data from the row
-            const rowData = {
-                ticketName: cells[1]?.querySelector('input')?.value.trim() || "N/A",
-                status: cells[4]?.querySelector('input')?.value.trim() || "N/A",
-                priority: cells[5]?.querySelector('input')?.value || "N/A",
-                notes: cells[6]?.querySelector('input')?.value.trim() || "N/A",
-            };
-
-            // Convert the data to JSON
-            const jsonString = JSON.stringify(rowData, null, 2);
-
-            // Create a blob and trigger a download
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `dashboardExport`; // File name
-            link.click();
-        }
 
         // Drag and drop table rows 
         let draggedRow = null;
@@ -333,6 +460,7 @@
         function addRow() {
             const tableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
             const newRow = document.createElement('tr');
+            newRow.classList.add("manualTask")
             newRow.setAttribute('draggable', 'true');
             newRow.setAttribute('ondragstart', 'drag(event)');
             newRow.setAttribute('ondragover', 'allowDrop(event)');
@@ -358,8 +486,6 @@
                 <td class="p-1 text-center border border-gray-200 action-buttons">
                     <button onclick="deleteRow(${randomNumber})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
                     <button onclick="this.closest('tr').style.display = 'none'" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
-                    <button onclick="saveRow(${randomNumber})" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Save</button>
-
                 </td>
             `;
             tableBody.appendChild(newRow);
@@ -418,131 +544,188 @@
         tr:hover {
             background-color: rgba(240, 240, 240, 0.8);
         }
+
+        #passwordEnteredDiv, #spinnerDiv {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
-    <div class="flex justify-center gap-4 my-4">
-        <h2 id="titleH2" class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
-        <button onclick="addRow()" class="px-4 bg-green-500 text-white rounded hover:bg-green-600"><b>Add
-                Row</b></button>
-        <button onclick="unhideAll()" class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide
-                All</b></button>
-        <button onclick="hideRowsWithStatus('Waiting on Dev Only')"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev Only</b></button>
-        <button id="hideTicketsNotFromBoardButton1" onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
-        <button id="hideTicketsNotFromBoardButton2" onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)"
-            class="px-4 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
-        <button onclick="hideRowsWithStatus('Waiting on Client')"
-            class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
-                Waiting on Client</b></button>
-        <button onclick="hideRowsWithStatus('Waiting on Dev')"
-            class="px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
-                Waiting on Dev</b></button>
+
+    <!-- Authenticated DOM / table -->
+    <div id="passwordEnteredDiv">
+        <div class="flex justify-center gap-3 my-2">
+            <div class="flex items-center justify-center">
+                <h2 id="titleH2" style="color: antiquewhite;" class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
+            </div>
+        
+            <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
+                <p class="mb-1 text-gray-200">Add / Refresh:</p>
+                <div class="flex justify-center gap-2">
+                    <button onclick="getAllTasks()" class="text-lg p-3 bg-green-500 text-white rounded hover:bg-green-600"><b>Refresh Dashboard</b></button>
+                    <button onclick="addRow()" class="text-lg p-3 bg-green-500 text-white rounded hover:bg-green-600"><b>Add Manual Task</b></button>
+                </div>
+            </div>
+        
+            <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
+                <p class="mb-1 text-gray-200">Show only:</p>
+                <div class="flex justify-center gap-2">
+                    <button onclick="hideRowsbyDataSource('Jira')" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Tickets</b></button>
+                    <button onclick="hideRowsbyDataSource('Lancom Button')" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Jira</b></button>
+                    <button onclick="hideRowsWithStatus('Waiting on Dev Only')" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev</b></button>
+                    <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)" id="hideTicketsNotFromBoardButton1" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
+                    <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)" id="hideTicketsNotFromBoardButton2" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
+                </div>
+            </div>
+        
+            <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
+                <p class="mb-1 text-gray-200">Hide All:</p>
+                <div class="flex justify-center gap-2">
+                    <button onclick="hideRowsWithStatus('Waiting on Client')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Client</b></button>
+                    <button onclick="hideRowsWithStatus('Waiting on Dev')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Dev</b></button>
+                </div>
+            </div>
+            <button onclick="unhideAll()" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide All</b></button>
+            <button onclick="" class="text-lg py-3 px-6 bg-red-500 text-white rounded hover:bg-blue-600"><b>Save All</b></button>
+
+
+        </div>
+        
+
+        <div class="p-1 m-1">
+            <table id="resultsTable"
+                class="table-auto border-collapse border border-gray-300 w-full mx-auto text-sm text-gray-700">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-1 px-2 border border-gray-300">Ticket Name</th>
+                        <th style="max-width: 180px;" class="py-1 px-2 border border-gray-300">Contact</th>
+                        <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Tech Portal</th>
+                        <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 1</th>
+                        <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 2</th>
+                        <th onclick="sortTableRows('Board')"
+                            class="py-1 px-2 text-center border border-gray-300 jira-columns">
+                            Board</th>
+                        <th onclick="sortTableRows('Status')" class="py-1 px-1 text-center border border-gray-300">Status
+                        </th>
+                        <th onclick="sortTableRows('P')" class="py-1 px-1 text-center border border-gray-300">P</th>
+                        <th class="py-1 px-2 text-center meeting-notes border border-gray-300">Notes</th>
+                        <th class="py-1 px-2 text-center border border-gray-300">Actions</th>
+                        <th style="display: none">Board</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+
+
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="p-1 m-1">
-        <table id="resultsTable"
-            class="table-auto border-collapse border border-gray-300 w-full mx-auto text-sm text-gray-700">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="py-1 px-2 border border-gray-300">Ticket Name</th>
-                    <th style="max-width: 180px;" class="py-1 px-2 border border-gray-300">Contact</th>
-                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Tech Portal</th>
-                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 1</th>
-                    <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 2</th>
-                    <th onclick="sortTableRows('Board')"
-                        class="py-1 px-2 text-center border border-gray-300 jira-columns">
-                        Board</th>
-                    <th onclick="sortTableRows('Status')" class="py-1 px-1 text-center border border-gray-300">Status
-                    </th>
-                    <th onclick="sortTableRows('P')" class="py-1 px-1 text-center border border-gray-300">P</th>
-                    <th class="py-1 px-2 text-center meeting-notes border border-gray-300">Notes</th>
-                    <th class="py-1 px-2 text-center border border-gray-300">Actions</th>
-                    <th style="display: none">Board</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
 
-
-            </tbody>
-        </table>
+    <!-- Spinner -->
+    <div id="spinnerDiv" role="status" class="text-center m-6 p-6">
+        <svg aria-hidden="true" class="inline w-20 h-20 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+        </svg>
+        <span class="sr-only">Loading...</span>
     </div>
 
-    <!-- Script for setting board preferences -->
-    <script defer>
-
-        ////////////////////// Lee
-        const Technician = {
-            Name:"Lee",
-            LancomButtonId:515,
-            DD4DDId:103880
-        }
-        const PrimaryBoard1 = {
-            BoardName: 'NZPA Service Board',
-            ButtonText: 'NZPA Only'
-        }
-        const PrimaryBoard2 = {
-            BoardName: 'CSP Portal',
-            ButtonText: 'CSP Only'
-        }
 
 
-        // //////////////////// Leo
-        // const Technician = {
-        //     Name:"Leo",
-        //     LancomButtonId:532,
-        //     DD4DDId:105890
-        // }
-        // const PrimaryBoard1 = {
-        //     BoardName: 'Prompt Service Board',
-        //     ButtonText: 'Prompt Only'
-        // }
-        // const PrimaryBoard2 = {
-        //     BoardName: 'HSE Connect Service Board',
-        //     ButtonText: 'HSE Only'
-        // }
+    <!-- Sign in modal -->
+    <div id="passwordNotEnteredDiv">
+        <div id="authentication-modal" class="flex items-center justify-center min-h-screen ">
+            <div class="relative p-4 w-full max-w-md max-h-full">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <!-- Modal header -->
+                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white text-center mx-auto">
+                            Sign in
+                        </h3>
 
-        // //////////////////// Aaron
-        // const Technician = {
-        //     Name: "Aaron",
-        //     LancomButtonId: 278,
-        //     DD4DDId: 10096
-        // }
-        // const PrimaryBoard1 = {
-        //     BoardName: 'Application Support',
-        //     ButtonText: 'App Support Only'
-        // }
-        // const PrimaryBoard2 = {
-        //     BoardName: 'TimeSanity Service Board',
-        //     ButtonText: 'TimeSanity Only'
-        // }
+                    </div>
+                    <!-- Modal body -->
+                    <div class="p-4 md:p-5">
+                        <form class="space-y-4" action="#" id="authModal">
+                            <div>
+                                <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enter your password</label>
+                                <input type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
+                            </div>
+                            <label class="block pb-2 mb-2 text-sm font-medium text-gray-900 dark:text-white text-center">Select your name</label>
+                            <div style="margin: auto; width: 100%;" class="inline-flex rounded-md shadow-sm justify-center " role="group">
+                                <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Lee">
+                                    Lee
+                                  </button>
+                                  <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Leo">
+                                    Leo
+                                  </button>
+                                  <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Aaron">
+                                    Aaron
+                                  </button>
+                                  <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Collin">
+                                    Collin
+                                  </button>
+                              </div>
+                              <input type="hidden" name="selectedName" id="selectedName" value="">
+                            <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Lets Rock</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
 
+    <!-- Script for authentication modal -->
+    <script>
+        // JavaScript to handle form submission
+        const form = document.getElementById('authModal');
+        const nameButtons = document.querySelectorAll('.name-button');
+        const selectedNameInput = document.getElementById('selectedName');
+    
+        // Handle button clicks to select a name
+        nameButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const selectedName = button.getAttribute('data-name');
+            selectedNameInput.value = selectedName; // Set the hidden input value
+            console.log(`Selected Name: ${selectedName}`);
+          });
+        });
+    
+        // Handle form submission
+        form.addEventListener('submit', (event) => {
+          event.preventDefault(); // Prevent the default form submission
+          
+          // Get form values
+          const passwordInputValue = document.getElementById('password').value;
+          const selectedName = selectedNameInput.value;
+    
+          if (!selectedName) {
+            alert('Please select a name before submitting.');
+            return;
+          }
+    
+          // Handle the form data
+          document.getElementById('authentication-modal').style.display = 'none'
+          document.getElementById('passwordEnteredDiv').style.display = 'block'
+          document.getElementById('spinnerDiv').style.display = 'block'
 
-        // //////////////////// Collin
-        // const Technician = {
-        //     Name:"Collin",
-        //     LancomButtonId:602,
-        //     DD4DDId:105980
-        // }
-        // const PrimaryBoard1 = {
-        //     BoardName: 'DeskDirector Support',
-        //     ButtonText: 'DD4DD Only'
-        // }
-        // const PrimaryBoard2 = {
-        //     BoardName: '',
-        //     ButtonText: 'Clear All'
-        // }
+          user = selectedName;
+          password = passwordInputValue;
+          getAllTasks()
 
         // update Dom with board preferences:
-        document.getElementById('hideTicketsNotFromBoardButton1').innerHTML = `<b>${PrimaryBoard1.ButtonText}</b>`
-        document.getElementById('hideTicketsNotFromBoardButton2').innerHTML = `<b>${PrimaryBoard2.ButtonText}</b>`
-        document.getElementById('titleH2').innerHTML = `<b>${Technician.Name}'s Dashboard</b>`
+        document.getElementById('titleH2').innerHTML = `<b>${user}'s Dashboard</b>`
 
 
 
-    </script>
+        });
+      </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 </body>
 
 </html>
+
+
