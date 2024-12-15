@@ -359,7 +359,9 @@
             if (statusToHide === "Waiting on Client") {
                 console.log("Waiting on Client")
                 Array.from(rows).forEach(row => {
-                    const statusCell = row.cells[6]; // Index of the Status column
+                    let statusCell = row.cells[6]; // Index of the Status column
+                    if(statusCell===undefined){statusCell=row.cells[2]}
+
                     if (statusCell &&
                         statusCell.innerText.trim() === "Waiting on client" ||
                         statusCell.innerText.trim() === "Waiting on Client" ||
@@ -374,10 +376,8 @@
                 console.log("Hide waiting on dev tasks")
 
                 Array.from(rows).forEach(row => {
-                    console.log(row.cells.length)
-                    if (row.cells.length > 9) {
-                        console.log("row length ok")
-                        const statusCell = row.cells[6]; // Index of the Status column
+                    let statusCell = row.cells[6]; // Index of the Status column
+                    if(statusCell===undefined){statusCell=row.cells[2]}
                         if (statusCell &&
                             statusCell.innerText.trim() === "Waiting on Development" ||
                             statusCell.innerText.trim() === "Waiting on Developer" ||
@@ -385,11 +385,7 @@
                             statusCell.innerText.trim() === "Waiting on Development - In Progress"
                         ) {
                             row.style.display = "none"; // Hide the row
-                            console.log("hiding row")
                         }
-
-
-                    }
 
                 });
             } else if (statusToHide === "Waiting on Dev Only") {
