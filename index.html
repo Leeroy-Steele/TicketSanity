@@ -59,7 +59,20 @@
 
             fetch("https://prod-18.australiasoutheast.logic.azure.com:443/workflows/8ede7348e08746df81513d8b45912c0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9ThA8L_C0klVuBaYpZ_kXvhoHHYLmBVlHnRgFWIxvJo", requestOptions)
                 .then((response) => response.json())
-                .then((result) => {
+                .then((result) => { 
+
+                    if(result.status==="wrong password"){
+                        console.error(result.status);                
+                        // remove spinner
+                        document.getElementById('spinnerDiv').style.display = 'none'
+                        // reopen auth modal
+                        document.getElementById('authentication-modal').style.display = 'flex'
+                        document.getElementById('passwordEnteredDiv').style.display = 'none'
+                        document.getElementById('passwordLabel').innerText = 'Wrong password, try again'
+                        document.getElementById('passwordLabel').style.color = 'red'
+                        return
+
+                    }
 
                     LancomButtonId = result.memberDetails.LancomButtonId
                     DD4DDId = result.memberDetails.DD4DDId
@@ -470,7 +483,7 @@
 
             newRow.innerHTML = `
                 <td colspan="6" class="p-1 border border-gray-200"><input type="text" placeholder="Task" class="w-full border rounded p-1"></td>
-                <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input style="width: 35px; "type="text" placeholder="..." class="border rounded p-1"></td>
+                <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input type="text" placeholder="..." class="border rounded p-1"></td>
                 <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input style="width: 35px; "type="text" placeholder="..." class="border rounded p-1"></td>
 
 
@@ -555,11 +568,7 @@
 
     <!-- Authenticated DOM / table -->
     <div id="passwordEnteredDiv">
-        <div class="flex justify-center gap-3 my-2">
-            <div class="flex items-center justify-center">
-                <h2 id="titleH2" style="color: antiquewhite;" class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
-            </div>
-        
+        <div class="flex justify-between gap-3 m-2">
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                 <p class="mb-1 text-gray-200">Add / Refresh:</p>
                 <div class="flex justify-center gap-2">
@@ -578,7 +587,13 @@
                     <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)" id="hideTicketsNotFromBoardButton2" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
                 </div>
             </div>
-        
+
+            <div class="flex items-center justify-center">
+                <h2 id="titleH2" style="color: antiquewhite;" class="text-center text-2xl m-4 color-white">TicketSanity</h2>
+                <img width="64" height="64" src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/external-octopus-animal-flaticons-lineal-color-flat-icons-3.png" alt="external-octopus-animal-flaticons-lineal-color-flat-icons-3"/>        
+            </div>
+
+
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                 <p class="mb-1 text-gray-200">Hide All:</p>
                 <div class="flex justify-center gap-2">
@@ -586,10 +601,12 @@
                     <button onclick="hideRowsWithStatus('Waiting on Dev')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Dev</b></button>
                 </div>
             </div>
-            <button onclick="unhideAll()" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide All</b></button>
-            <button onclick="" class="text-lg py-3 px-6 bg-red-500 text-white rounded hover:bg-blue-600"><b>Save All</b></button>
 
-
+            <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
+                <p class="mb-1 text-gray-200">Restore::</p>
+                <button onclick="unhideAll()" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide All</b></button>
+                <button onclick="" class="text-lg py-3 px-6 bg-red-500 text-white rounded hover:bg-blue-600"><b>Save All</b></button>
+            </div>
         </div>
         
 
@@ -640,31 +657,31 @@
                 <!-- Modal content -->
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- Modal header -->
-                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white text-center mx-auto">
-                            Sign in
+                    <div class="flex items-center justify-center p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            TicketSanity
                         </h3>
-
+                        <img width="64" height="64" src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/external-octopus-animal-flaticons-lineal-color-flat-icons-3.png" alt="external-octopus-animal-flaticons-lineal-color-flat-icons-3"/>
                     </div>
                     <!-- Modal body -->
                     <div class="p-4 md:p-5">
                         <form class="space-y-4" action="#" id="authModal">
                             <div>
-                                <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enter your password</label>
+                                <label id="passwordLabel" for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-center">Enter your password</label>
                                 <input type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
                             </div>
                             <label class="block pb-2 mb-2 text-sm font-medium text-gray-900 dark:text-white text-center">Select your name</label>
-                            <div style="margin: auto; width: 100%;" class="inline-flex rounded-md shadow-sm justify-center " role="group">
-                                <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Lee">
+                            <div style="margin: auto; width: 100%;" class="inline-flex rounded-md shadow-sm justify-between " role="group">
+                                <button type="button" class="name-button px-6 py-4 text-lg text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Lee">
                                     Lee
                                   </button>
-                                  <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Leo">
+                                  <button type="button" class="name-button px-6 py-4 text-lg text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Leo">
                                     Leo
                                   </button>
-                                  <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Aaron">
+                                  <button type="button" class="name-button px-6 py-4 text-lg text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Aaron">
                                     Aaron
                                   </button>
-                                  <button type="button" class="name-button px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Collin">
+                                  <button type="button" class="name-button px-6 py-4 text-lg text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white" data-name="Collin">
                                     Collin
                                   </button>
                               </div>
@@ -716,7 +733,7 @@
           getAllTasks()
 
         // update Dom with board preferences:
-        document.getElementById('titleH2').innerHTML = `<b>${user}'s Dashboard</b>`
+        document.getElementById('titleH2').innerHTML = `<b>${user}'s TicketSanity</b>`
 
 
 
