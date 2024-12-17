@@ -6,66 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local Storage Password Example</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-
-
 </head>
 
-<body style="background-color: black;">
-    <!-- <h1>Local Storage Password Example</h1>
+<body >
+    <h1>Local Storage Password Example</h1>
     <textarea id="passwordInput" placeholder="Enter your password"></textarea>
-    <button onclick="save()">Save Password</button>
+    <button onclick="save()">Save Password 1</button>
+    <button onclick="save2()">Save Password 2</button>
     <button onclick="retrieve()">Retrieve Password</button>
-    <button onclick="clear()">Clear Password</button>
-    <p id="output"></p> -->
-
-    <div class="flex justify-center gap-4 my-2">
-        <h2 id="titleH2" style="color: antiquewhite;" class="text-center text-2xl my-4 color-white">Ticket Dashboard</h2>
-        <div class="border border-white text-xs text-center text-white p-1 rounded-lg">
-            Add / Refresh Task list
-    
-            <div class="flex justify-center gap-2 my-4">
-                <button class="p-4 bg-green-500 text-white rounded hover:bg-green-600"><b>Refresh</b></button>
-                <button class="p-4 bg-green-500 text-white rounded hover:bg-green-600"><b>Add Manual Task</b></button>
-            </div>
-        </div>
-
-        <div class="border border-white text-xs text-center text-white p-1 rounded-lg">
-            Unhide
-
-            <div class="flex justify-center gap-4 my-4">
-    
-                <button class="p-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide All</b></button>
-                
-    
-        
-            </div>
-        </div>
-    
-        <div class="border border-white text-xs text-center text-white p-1 rounded-lg">
-            Filter by
-    
-            <div class="flex justify-center gap-4 my-4">
-    
-                <button class="p-4 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev Only</b></button>
-                <button id="hideTicketsNotFromBoardButton1"
-                    class="p-4 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
-                <button id="hideTicketsNotFromBoardButton2"
-                    class="p-4 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
-                <button class="p-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
-                        Waiting on Client</b></button>
-                <button onclick="hideRowsWithStatus('Waiting on Dev')"
-                    class="p-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded bg-yellow-500 hover:bg-yellow-600"><b>Hide
-                        Waiting on Dev</b></button>
-        
-            </div>
-        </div>
-    </div>
+    <button onclick="clearIt()">Clear Password 1</button>
+    <p id="output"></p>
 
 
 
-    <!-- <script>
+
+
+    <script>
         // Save the password
         function save() {
             const password = document.getElementById('passwordInput').value;
@@ -76,8 +32,17 @@
                 document.getElementById('output').textContent = 'Please enter a password.';
             }
         }
+        function save2() {
+            const password = document.getElementById('passwordInput').value;
+            if (password) {
+                localStorage.setItem('userPassword2', password);
+                document.getElementById('output').textContent = 'Password saved!';
+            } else {
+                document.getElementById('output').textContent = 'Please enter a password.';
+            }
+        }
 
-        // Retrieve the password
+        //Retrieve the password
         function retrieve() {
             const password = localStorage.getItem('userPassword');
             if (password) {
@@ -88,11 +53,15 @@
         }
 
         // Clear the password
-        function clear() {
-            localStorage.removeItem('userPassword');
+        function clearIt(){
+            console.log("ahsdahsd")
+            // localStorage.removeItem('userPassword');
+            // localStorage.removeItem('userPassword2');
+            // localStorage.removeItem('userPassword3');
+            localStorage.clear();
             document.getElementById('output').textContent = 'Password cleared from local storage.';
         }
-    </script> -->
+    </script>
 </body>
 
 </html>

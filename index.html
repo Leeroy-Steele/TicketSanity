@@ -93,6 +93,7 @@
                         const LancomJiraURL = `https://lancom.atlassian.net/browse/${issue.key}`
 
                         return {
+                            name:issue.key,
                             ticketName: `<a href="${LancomJiraURL}" class="text-blue-600 hover:underline">${issue.key}</a>`,
                             techPortalLink: "",
                             contactName: issue.fields.assignee !== null ? issue.fields.assignee.displayName : "",
@@ -119,6 +120,7 @@
 
                         LancomCSPJiraLink !== undefined ? LancomCSPJiraLink = LancomCSPJiraLink.toUpperCase() : LancomCSPJiraLink = "N/A";
                         return {
+                            name:ticket.name.substring(0, 65),
                             ticketName: `<a href="https://cloud.lancom.tech/portal/v2/groups/my-tickets/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.name.substring(0, 65)}</a>`,
                             techPortalLink: ticket.board.name === "DeskDirector Support" ?
                                 `<a href="https://support.deskdirector.com/tech/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.id}</a>`
@@ -154,6 +156,7 @@
                             ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === LancomButtonId) ||
                             ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === DD4DDId)
                         ) {
+
                             let tableRow = `
                             <tr id="row-${index}" class="ticketRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
                                 <td class="py-1 px-2 border border-gray-200">${ticket.ticketName}</td>
@@ -168,9 +171,9 @@
                                 <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div onclick="tickBox('tickBoxDiv${index + 1}')">
-                                            <img id="tickBoxDiv${index + 1}" width="30" height="30" src="https://img.icons8.com/ios/30/checked-2--v3.png" alt="checked-2--v3" />
+                                            <img id="tickBoxDiv${index + 1}" width="30" height="30" src="${localStorage.getItem(ticket.name+": Check Box Url")?localStorage.getItem(ticket.name+": Check Box Url"):"https://img.icons8.com/ios/30/checked-2--v3.png"}" alt="checked-2--v3" />
                                         </div>
-                                        <input type="text" class="w-full p-1 border rounded" placeholder="..." />
+                                        <input id="${index}-notesField" type="text" class="w-full p-1 border rounded" placeholder="..." value="${localStorage.getItem(ticket.name+": Notes Field")?localStorage.getItem(ticket.name+": Notes Field"):""}" />
                                     </div>
                                 </td>
 
@@ -210,9 +213,9 @@
                                 <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div onclick="tickBox('tickBoxDiv${index + 1000}')">
-                                            <img id="tickBoxDiv${index + 1000}" width="30" height="30" src="https://img.icons8.com/ios/30/checked-2--v3.png" alt="checked-2--v3" />
+                                            <img id="tickBoxDiv${index + 1000}" width="30" height="30" src="${localStorage.getItem("Jira Issue: " + issue.name+": Check Box Url")?localStorage.getItem("Jira Issue: " + issue.name+": Check Box Url"):"https://img.icons8.com/ios/30/checked-2--v3.png"}" alt="checked-2--v3" />
                                         </div>
-                                        <input type="text" class="w-full p-1 border rounded" placeholder="..." />
+                                        <input id="${index + 1000}-notesField" type="text" class="w-full p-1 border rounded" placeholder="..." value="${localStorage.getItem("Jira Issue: " + issue.name+": Notes Field")?localStorage.getItem("Jira Issue: " + issue.name+": Notes Field"):""}" />
                                     </div>
                                 </td>
 
@@ -231,10 +234,50 @@
                         // Append the row to the table body
                         tableBody.insertAdjacentHTML("beforeend", tableRow);
 
+                        }
+                    })
+
+
+                    // Add event listener to save user interaction to local storage
+                    // Select the table
+                    const fullTable = document.getElementById('resultsTable');
+                    // Loop through all rows in the table body (ignoring the header)
+                    const rows = fullTable.querySelectorAll('tbody tr');
+
+                    rows.forEach(row => {
+
+                        // notes input field
+                        const notesField = row.cells[8]
+                        const inputField = notesField.querySelector('input') // Select the input field
+
+                        // TicketName field
+                        const TicketName = row.cells[0]
+                        const TicketNameText = TicketName.innerText
+
+                        // Checked / Unchecked image
+                        const imageElement = row.querySelector('.meeting-notes img');
+
+                        // Check if the image exists
+                        if (imageElement){
+
+                            imageElement.addEventListener('click', function(event) {
+                                const imageUrl = event.target.src; // Get the src of the clicked image
+                                localStorage.setItem(TicketNameText+": Check Box Url", imageUrl==="https://img.icons8.com/color/30/checked-checkbox.png"?"https://img.icons8.com/ios/30/checked-2--v3.png":"https://img.icons8.com/color/30/checked-checkbox.png")
+
+                            });
 
                         }
 
-                    })
+                        if (inputField) {
+                            inputField.addEventListener('input', function() {
+
+                                localStorage.setItem(TicketNameText+": Notes Field",inputField.value)
+
+                            });
+                        }
+
+                    });
+
 
                 })
                 .catch((error) => {
@@ -505,7 +548,20 @@
         }
 
         function deleteRow(index) {
+
+            // Get innerHTML value of row collumn[0] to use as key to remove data from local storage 
+            const row = document.getElementById('row-' + index)
+            // TicketName field
+            const TicketName = row.cells[0]
+            const TicketNameText = TicketName.innerText
+
+            // Remove data from local storage
+            localStorage.removeItem(TicketNameText+": Notes Field")
+            localStorage.removeItem(TicketNameText+": Check Box Url")
+
+            // remove row
             document.getElementById('row-' + index).remove();
+
         }
 
         function unhideAll() {
