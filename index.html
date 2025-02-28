@@ -2,16 +2,12 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flowbite"></script>
-
-
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-
 
     <!-- Script for fetching and sorting ticket tasks from PA-->
     <script defer>
@@ -21,7 +17,7 @@
         // Clear old fetched tasks first. Leave manual tasks
         function removeRowsExceptHeaderAndManualTask() {
             const table = document.getElementById('resultsTable');
-            const rows = table.rows; // Live HTMLCollection of table rows
+            const rows = table.rows;
             let i = 1; // Start at 1 to skip the header row
 
             while (i < rows.length) {
@@ -35,6 +31,7 @@
             }
         }
 
+        // function to retrieve all tickets / jira issues from PA flow
         function getAllTasks() {
             // Remove stale tasks
             removeRowsExceptHeaderAndManualTask()
@@ -44,23 +41,20 @@
             // Fetch live tickets from PA - https://make.powerautomate.com/environments/2e21e621-fcf3-eae1-a4d1-9e02b3152fc8/flows/6bfb118f-722a-44fa-9c84-1dfddefa790c/details
             const myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
-
             const raw = JSON.stringify({
                 "User": user,
                 "PW": password
             });
-
             const requestOptions = {
                 method: "POST",
                 headers: myHeaders,
                 body: raw,
                 redirect: "follow"
             };
-
             fetch("https://prod-18.australiasoutheast.logic.azure.com:443/workflows/8ede7348e08746df81513d8b45912c0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9ThA8L_C0klVuBaYpZ_kXvhoHHYLmBVlHnRgFWIxvJo", requestOptions)
                 .then((response) => response.json())
                 .then((result) => { 
-
+                    // error handling for wrong password provided to PA
                     if(result.status==="wrong password"){
                         console.error(result.status);                
                         // remove spinner
@@ -71,9 +65,9 @@
                         document.getElementById('passwordLabel').innerText = 'Wrong password, try again'
                         document.getElementById('passwordLabel').style.color = 'red'
                         return
-
                     }
 
+                    // IF PA is happy with auth, assign member preferences from PA flow response:
                     LancomButtonId = result.memberDetails.LancomButtonId
                     DD4DDId = result.memberDetails.DD4DDId
                     PrimaryBoard1 = result.memberBoards[0]
@@ -89,7 +83,6 @@
 
                     // Refactor jira issues payload
                     const jiraResults = result.jiraResults.map((issue) => {
-
                         const LancomJiraURL = `https://lancom.atlassian.net/browse/${issue.key}`
 
                         return {
@@ -278,15 +271,12 @@
 
                     });
 
-
                 })
                 .catch((error) => {
                     console.error(error);                
                     // remove spinner
                     document.getElementById('spinnerDiv').style.display = 'none'
                 });
-
-
 
         }
 
