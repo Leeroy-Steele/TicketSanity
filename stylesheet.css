@@ -1,0 +1,42 @@
+h2 {
+    color: #f1f1f1;
+}
+
+body {
+    background-image: url("https://i.imgur.com/WNqOEoF.png");
+    background-size: cover;
+    /* background: linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url('https://i.imgur.com/wUousYb.png'); */
+}
+
+tr.dragging {
+    opacity: 0.5;
+    background: #f1f1f1;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+    background-color: whitesmoke;
+}
+
+.jira-columns {
+    width: 100px;
+}
+
+.meeting-notes {
+    width: 400px;
+}
+
+.action-buttons button {
+    width: 90px;
+    padding: 5px;
+    white-space: nowrap;
+}
+
+tr:hover {
+    background-color: rgba(240, 240, 240, 0.8);
+}
+
+#passwordEnteredDiv, #spinnerDiv {
+    display: none;
+}

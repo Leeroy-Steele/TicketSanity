@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link href="stylesheet.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flowbite"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
@@ -347,7 +347,6 @@
         // for the tick option on each ticket row. Changes image to tick / box
         function tickBox(divID) {
             const targetImg = document.getElementById(`${divID}`)
-
             // Append the image to the div
             if (targetImg.src === "https://img.icons8.com/ios/30/checked-2--v3.png") {
                 targetImg.src = 'https://img.icons8.com/color/30/checked-checkbox.png';
@@ -560,50 +559,6 @@
         }
     </script>
 
-    <style>
-        h2 {
-            color: #f1f1f1;
-        }
-
-        body {
-            background-image: url("https://i.imgur.com/WNqOEoF.png");
-            background-size: cover;
-            /* background: linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url('https://i.imgur.com/wUousYb.png'); */
-        }
-
-        tr.dragging {
-            opacity: 0.5;
-            background: #f1f1f1;
-        }
-
-        table {
-            table-layout: fixed;
-            width: 100%;
-            background-color: whitesmoke;
-        }
-
-        .jira-columns {
-            width: 100px;
-        }
-
-        .meeting-notes {
-            width: 400px;
-        }
-
-        .action-buttons button {
-            width: 90px;
-            padding: 5px;
-            white-space: nowrap;
-        }
-
-        tr:hover {
-            background-color: rgba(240, 240, 240, 0.8);
-        }
-
-        #passwordEnteredDiv, #spinnerDiv {
-            display: none;
-        }
-    </style>
 </head>
 
 <body>
