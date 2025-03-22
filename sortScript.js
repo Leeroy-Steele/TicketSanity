@@ -256,20 +256,48 @@
 
         // Get innerHTML value of row collumn[0] to use as key to remove data from local storage 
         const row = document.getElementById('row-' + index)
-        // TicketName field
-        const TicketName = row.cells[0]
-        const TicketNameText = TicketName.innerText
+        
+        // // TicketName field (Old, not used)
+        // const TicketName = row.cells[0]
+        // const TicketNameText = TicketName.innerText
+
+        // // New identifiers
+        const TicketIdentifier = row.cells[2].innerText ? row.cells[2].innerText : row.cells[3].innerText ;
 
         // Remove data from local storage
-        localStorage.removeItem(TicketNameText+": Notes Field")
-        localStorage.removeItem(TicketNameText+": Check Box Url")
+        localStorage.removeItem(TicketIdentifier+": Notes Field")
+        localStorage.removeItem(TicketIdentifier+": Check Box Url")
 
         // remove row
         document.getElementById('row-' + index).remove();
 
     }
 
+    // Hide for a day (TBC)
+    function hideForADay(index) {
+
+        // Get innerHTML row from table
+        const row = document.getElementById('row-' + index)
+
+        // // New identifiers for localstorage
+        const TicketIdentifier = row.cells[2].innerText ? row.cells[2].innerText : row.cells[3].innerText ;
+
+        const date = new Date();
+        date.setDate(date.getDate() + 1); // Add 1 day
+
+        // Add timestamp to local storage for this ticket / issue
+        localStorage.setItem(TicketIdentifier+": Hide Until", date)
+
+        // hide row
+        document.getElementById('row-' + index).style.display = 'none';
+
+    }
+
+
+
+
     function unhideAll() {
+
         const rows = document.querySelectorAll('tr');
         rows.forEach(row => row.style.display = '');
     }

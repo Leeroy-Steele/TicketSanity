@@ -125,11 +125,15 @@ function getAllTasks() {
                             ? `<a href="https://cloudinsurance.atlassian.net/browse/${CIPacTicket}" class="text-blue-600 hover:underline">${CIPacTicket}</a>`
                             : null,
                     status: ticket.status.name,
+                    ticketId: ticket.id
                 };
             })
 
             // Generate the HTML table rows from tickets payload
             sortedTickets.forEach((ticket, index) => {
+
+                // change style depending on hide timestamp
+                let styleText = '';
 
                 // Filter out tickets that are not relevant to me
                 if (ticket.boardName === PrimaryBoard1.BoardName ||
@@ -138,8 +142,30 @@ function getAllTasks() {
                     ticket.assignedMembers != [] && ticket.assignedMembers.find(member => member.id === DD4DDId)
                 ) {
 
+                // Check if the is a hide timestamp for each ticket / issue 
+                if(localStorage.getItem(ticket.ticketId+": Hide Until")){
+
+                    // Convert the date string from local storage to a Date object
+                    const parsedDate = new Date(localStorage.getItem(ticket.ticketId+": Hide Until"));    
+
+                    // Get date now to compare timestamp with
+                    const date = new Date();
+
+                    if(parsedDate>date){
+                        console.log("Hiding this one until the date is reached: " + ticket.ticketId)
+                        styleText = 'none'
+
+                    }
+                    else{
+                        // Remove timestamp for this tickeyt from local storage
+                        localStorage.removeItem(ticket.ticketId+": Hide Until")
+
+                    }
+
+                }
+
                     let tableRow = `
-                    <tr id="row-${index}" class="ticketRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
+                    <tr id="row-${index}" style="display:${styleText}" class="ticketRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
                         <td class="py-1 px-2 border border-gray-200">${ticket.ticketName}</td>
                         <td style="max-width: 180px;" class="py-1 px-2 border border-gray-200">${ticket.contactName}</td>
                         <td class="py-1 px-2 text-center border border-gray-200">${ticket.techPortalLink}</td>
@@ -152,22 +178,22 @@ function getAllTasks() {
                         <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div onclick="tickBox('tickBoxDiv${index + 1}')">
-                                    <img id="tickBoxDiv${index + 1}" width="30" height="30" src="${localStorage.getItem(ticket.name+": Check Box Url")?localStorage.getItem(ticket.name+": Check Box Url"):"https://img.icons8.com/ios/30/checked-2--v3.png"}" alt="checked-2--v3" />
+                                    <img id="tickBoxDiv${index + 1}" width="30" height="30" src="${localStorage.getItem(ticket.ticketId+": Check Box Url")?localStorage.getItem(ticket.ticketId+": Check Box Url"):"https://img.icons8.com/ios/30/checked-2--v3.png"}" alt="checked-2--v3" />
                                 </div>
-                                <input id="${index}-notesField" type="text" class="w-full p-1 border rounded" placeholder="..." value="${localStorage.getItem(ticket.name+": Notes Field")?localStorage.getItem(ticket.name+": Notes Field"):""}" />
+                                <input id="${index}-notesField" type="text" class="w-full p-1 border rounded" placeholder="..." value="${localStorage.getItem(ticket.ticketId+": Notes Field")?localStorage.getItem(ticket.ticketId+": Notes Field"):""}" />
                             </div>
                         </td>
 
                         <td class="py-1 px-2 text-center border border-gray-200 action-buttons">
-                            <button onclick="deleteRow(${index})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+                            <button onclick="hideForADay(${index})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">1 day hide</button>
                             <button onclick="hideRow(${index})" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
                         </td>
 
                     </tr>
                 `
-                    const tableBody = document.getElementById("tableBody"); // Locate the <tbody>
 
                     // Append the row to the table body
+                    const tableBody = document.getElementById("tableBody"); // Locate the <tbody>
                     tableBody.insertAdjacentHTML("beforeend", tableRow);
 
                 }
@@ -175,13 +201,39 @@ function getAllTasks() {
 
             // Generate the HTML table rows from jira payload
             jiraResults.forEach((issue, index) => {
+
+                let styleText = '';
+
+                // Append the row to the table body (if no hide timestamp exists)
+                if(localStorage.getItem(issue.name+": Hide Until")){
+
+                    // Convert the date string from local storage to a Date object
+                    const parsedDate = new Date(localStorage.getItem(issue.name+": Hide Until"));    
+
+                    // Get date now to compare timestamp with
+                    const date = new Date();
+
+                    if(parsedDate>date){
+                        console.log("Hiding this one until the date is reached: " + issue.name)
+                        styleText = 'none'
+                    }
+                    else{
+                        // Remove timestamp for this tickeyt from local storage
+                        localStorage.removeItem(issue.name+": Hide Until")
+
+                    }
+
+                }
+
+
+
                 if( issue.boardName==="Prompt" && returnPromptIssues ||
                     issue.boardName==="CSP Portal" && returnCSPIssues ||
                     issue.boardName==="HSE Connect" && returnHSEIssues
                 ){
 
                     let tableRow = `
-                    <tr id="row-${index + 1000}" class="jiraRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
+                    <tr id="row-${index + 1000}" style="display:${styleText}"  class="jiraRow" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
                         <td class="py-1 px-2 border border-gray-200"> Jira Issue: ${issue.ticketName}</td>
                         <td style="max-width: 180px;" class="py-1 px-2 border border-gray-200">${issue.contactName}</td>
                         <td class="py-1 px-2 text-center border border-gray-200">${issue.techPortalLink}</td>
@@ -194,14 +246,14 @@ function getAllTasks() {
                         <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div onclick="tickBox('tickBoxDiv${index + 1000}')">
-                                    <img id="tickBoxDiv${index + 1000}" width="30" height="30" src="${localStorage.getItem("Jira Issue: " + issue.name+": Check Box Url")?localStorage.getItem("Jira Issue: " + issue.name+": Check Box Url"):"https://img.icons8.com/ios/30/checked-2--v3.png"}" alt="checked-2--v3" />
+                                    <img id="tickBoxDiv${index + 1000}" width="30" height="30" src="${localStorage.getItem(issue.name+": Check Box Url")?localStorage.getItem(issue.name+": Check Box Url"):"https://img.icons8.com/ios/30/checked-2--v3.png"}" alt="checked-2--v3" />
                                 </div>
-                                <input id="${index + 1000}-notesField" type="text" class="w-full p-1 border rounded" placeholder="..." value="${localStorage.getItem("Jira Issue: " + issue.name+": Notes Field")?localStorage.getItem("Jira Issue: " + issue.name+": Notes Field"):""}" />
+                                <input id="${index + 1000}-notesField" type="text" class="w-full p-1 border rounded" placeholder="..." value="${localStorage.getItem(issue.name+": Notes Field")?localStorage.getItem(issue.name+": Notes Field"):""}" />
                             </div>
                         </td>
 
                         <td class="py-1 px-2 text-center border border-gray-200 action-buttons">
-                            <button onclick="deleteRow(${index + 1000})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+                            <button onclick="hideForADay(${index + 1000})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">1 day hide</button>
                             <button onclick="hideRow(${index + 1000})" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
                         </td>
                         
@@ -212,7 +264,7 @@ function getAllTasks() {
                 // remove spinner
                 document.getElementById('spinnerDiv').style.display = 'none'
 
-                // Append the row to the table body
+                // insert into html table
                 tableBody.insertAdjacentHTML("beforeend", tableRow);
 
                 }
@@ -231,9 +283,12 @@ function getAllTasks() {
                 const notesField = row.cells[8]
                 const inputField = notesField.querySelector('input') // Select the input field
 
-                // TicketName field
-                const TicketName = row.cells[0]
-                const TicketNameText = TicketName.innerText
+                // // TicketName field (Old not used anymore)
+                // const TicketName = row.cells[0]
+                // const TicketNameText = TicketName.innerText
+                
+                // // New identifiers
+                const TicketIdentifier = row.cells[2].innerText ? row.cells[2].innerText : row.cells[3].innerText ;
 
                 // Checked / Unchecked image
                 const imageElement = row.querySelector('.meeting-notes img');
@@ -243,7 +298,7 @@ function getAllTasks() {
 
                     imageElement.addEventListener('click', function(event) {
                         const imageUrl = event.target.src; // Get the src of the clicked image
-                        localStorage.setItem(TicketNameText+": Check Box Url", imageUrl==="https://img.icons8.com/color/30/checked-checkbox.png"?"https://img.icons8.com/ios/30/checked-2--v3.png":"https://img.icons8.com/color/30/checked-checkbox.png")
+                        localStorage.setItem(TicketIdentifier+": Check Box Url", imageUrl==="https://img.icons8.com/color/30/checked-checkbox.png"?"https://img.icons8.com/ios/30/checked-2--v3.png":"https://img.icons8.com/color/30/checked-checkbox.png")
 
                     });
 
@@ -252,7 +307,7 @@ function getAllTasks() {
                 if (inputField) {
                     inputField.addEventListener('input', function() {
 
-                        localStorage.setItem(TicketNameText+": Notes Field",inputField.value)
+                        localStorage.setItem(TicketIdentifier+": Notes Field",inputField.value)
 
                     });
                 }
