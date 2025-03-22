@@ -19,18 +19,13 @@
 
 8. make ticket number the unique identifier for local storage - ✅
 7. Hide task for a day  - ✅
-4. Clear checkmark master button
-41. Clear checkmark after 1 day???
-
-
 2. Add `my list` (Auto filter and sort)
 
+
+4. Clear checkmark master button
+41. Clear checkmark after 1 day???
 3. Add show secondary boards?
-
-
 1. Status filter for `completed`
-
-
 5. Clear notes master button?
 6. Option to mark as `worked on` or `resolved`. The latest 5 will appear in their own list, regardless of status, until overriden with a more rent ticket. Useful for remembering what I have worked on to raise in standup 
 

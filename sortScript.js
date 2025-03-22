@@ -3,7 +3,7 @@
 
     // Sort tickets by Priority / board / Status
     let sortAscendingOrder = true;
-    function sortTableRows(columnName) {
+    function sortTableRows(columnName, sortOrder) {
         const table = document.getElementById("resultsTable");
         const tbody = table.tBodies[0];
         const rows = Array.from(tbody?.rows || []);
@@ -30,11 +30,12 @@
 
         // Sort rows by the specified column
         rows.sort((rowA, rowB) => {
-            const cellA = rowA.cells[columnIndex]?.innerText.trim();    // row.cells[6] will find Board name for example
+            const cellA = rowA.cells[columnIndex]?.innerText.trim();    // row.cells[6] will sort by Board name for example
             const cellB = rowB.cells[columnIndex]?.innerText.trim();
 
             // Handle numeric sorting for the "P" column
             if (columnName === "P") {
+                console.log("first if")
                 const numA = parseFloat(cellA) || 0; // Convert to number or default to 0
                 const numB = parseFloat(cellB) || 0;
 
@@ -45,7 +46,19 @@
                     numB - numA
                     ;
             }
+            
+            // Testing this *****************************
+            else if (sortOrder){
+                console.log("second if")
+                const indexA = sortOrder.indexOf(cellA);
+                const indexB = sortOrder.indexOf(cellB);
+        
+                // If a status is not in sortOrder, move it to the end (assign a large index)
+                return (indexA === -1 ? sortOrder.length : indexA) - 
+                       (indexB === -1 ? sortOrder.length : indexB);
+            }
 
+            console.log("after if")
             // Default to text sorting
             return sortAscendingOrder ?
                 cellA.localeCompare(cellB)
@@ -120,7 +133,21 @@
                     row.style.display = "none"; // Hide the row
                 }
             });
-        } else if (statusToHide === "Waiting on Dev") {
+        }
+        else if (statusToHide === "Waiting on 3rd Party") {
+            console.log("Waiting on 3rd Party")
+            Array.from(rows).forEach(row => {
+                let statusCell = row.cells[6]; // Index of the Status column
+                if(statusCell===undefined){statusCell=row.cells[2]}
+
+                if (statusCell &&
+                    statusCell.innerText.trim() === "Waiting on 3rd Party"
+                ) {
+                    row.style.display = "none"; // Hide the row
+                }
+            });
+        }
+        else if (statusToHide === "Waiting on Dev") {
             console.log("Hide waiting on dev tasks")
 
             Array.from(rows).forEach(row => {
@@ -298,6 +325,29 @@
 
     function unhideAll() {
 
+        // remove local storage hide until flags
+        let matchingKeys = [];
+    
+        // Loop through localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i); // Get key name
+    
+            if (key.endsWith("Hide Until")) { // Check if key ends with "XYZ"
+                matchingKeys.push(key);
+            }
+        }
+    
+        matchingKeys.forEach(key=>localStorage.removeItem(key))
+
         const rows = document.querySelectorAll('tr');
         rows.forEach(row => row.style.display = '');
+    }
+
+    function sort(){
+
+        hideRowsWithStatus('Waiting on Client')
+        hideRowsWithStatus('Waiting on Dev')
+        hideRowsWithStatus('Waiting on 3rd Party')
+        sortTableRows('Status', [ "New", "Client responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled"])
+
     }

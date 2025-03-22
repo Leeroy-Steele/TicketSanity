@@ -51,6 +51,7 @@
                 <div class="flex justify-center gap-2">
                     <button onclick="hideRowsWithStatus('Waiting on Client')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Client</b></button>
                     <button onclick="hideRowsWithStatus('Waiting on Dev')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Dev</b></button>
+                    <button onclick="hideRowsWithStatus('Waiting on 3rd Party')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on 3rd Party</b></button>
                 </div>
             </div>
 
@@ -64,7 +65,7 @@
 
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                 <p class="mb-1 text-gray-200">Misc</p>
-                <button disabled onclick="" class="text-lg py-3 px-6 bg-white text-black rounded hover:bg-grey-200 disabled"><b>TBC</b></button>
+                <button onclick="sort()" class="text-lg py-3 px-6 bg-white text-black rounded hover:bg-grey-200 disabled"><b>Sort</b></button>
            </div>
             
         </div>
