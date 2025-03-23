@@ -351,7 +351,7 @@
         hideRowsWithStatus('Waiting on Client')
         hideRowsWithStatus('Waiting on Dev')
         hideRowsWithStatus('Waiting on 3rd Party')
-        sortTableRows('Status', [ "New", "Client responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled"])
+        sortTableRows('Status', [ "New", "Client responded","Client Responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled"])
 
     }
 
@@ -360,6 +360,6 @@
         hideRowsWithStatus('Waiting on Client')
         hideRowsWithStatus('Waiting on Dev')
         hideRowsWithStatus('Waiting on 3rd Party')
-        sortTableRows('Status', [ "New", "Client responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled"])
+        sortTableRows('Status', [ "New", "Client responded","Client Responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled","Assigned"])
         sortTableRows('P',null, "decending")
     }
