@@ -3,7 +3,7 @@
 
     // Sort tickets by Priority / board / Status
     let sortAscendingOrder = true;
-    function sortTableRows(columnName, sortOrder) {
+    function sortTableRows(columnName, sortOrder, sortDirection) {
         const table = document.getElementById("resultsTable");
         const tbody = table.tBodies[0];
         const rows = Array.from(tbody?.rows || []);
@@ -35,7 +35,11 @@
 
             // Handle numeric sorting for the "P" column
             if (columnName === "P") {
-                console.log("first if")
+
+                if(sortDirection==="decending"){
+                    sortAscendingOrder=true
+                }
+
                 const numA = parseFloat(cellA) || 0; // Convert to number or default to 0
                 const numB = parseFloat(cellB) || 0;
 
@@ -49,7 +53,6 @@
             
             // Testing this *****************************
             else if (sortOrder){
-                console.log("second if")
                 const indexA = sortOrder.indexOf(cellA);
                 const indexB = sortOrder.indexOf(cellB);
         
@@ -58,7 +61,7 @@
                        (indexB === -1 ? sortOrder.length : indexB);
             }
 
-            console.log("after if")
+
             // Default to text sorting
             return sortAscendingOrder ?
                 cellA.localeCompare(cellB)
@@ -343,11 +346,20 @@
         rows.forEach(row => row.style.display = '');
     }
 
-    function sort(){
+    function organiseMyList(){
 
         hideRowsWithStatus('Waiting on Client')
         hideRowsWithStatus('Waiting on Dev')
         hideRowsWithStatus('Waiting on 3rd Party')
         sortTableRows('Status', [ "New", "Client responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled"])
 
+    }
+
+
+    function organiseMyLisByPriority(){
+        hideRowsWithStatus('Waiting on Client')
+        hideRowsWithStatus('Waiting on Dev')
+        hideRowsWithStatus('Waiting on 3rd Party')
+        sortTableRows('Status', [ "New", "Client responded", "In Progress", "In Progress - Do Not Send Email","Testing","Ready for QA","Scheduled"])
+        sortTableRows('P',null, "decending")
     }

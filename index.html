@@ -21,20 +21,20 @@
         <div class="flex justify-center gap-2 m-2">
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                 <p class="mb-1 text-gray-200">Add / Refresh:</p>
-                <div class="flex justify-center gap-2">
-                    <button onclick="getAllTasks()" class="text-lg p-3 bg-green-500 text-white rounded hover:bg-green-600"><b>Refresh Dashboard</b></button>
-                    <button onclick="addRow()" class="text-lg p-3 bg-green-500 text-white rounded hover:bg-green-600"><b>Add Manual Task</b></button>
+                <div class="flex justify-center gap-1">
+                    <button onclick="getAllTasks()" class="text-lg py-3 px-2 bg-green-500 text-white rounded hover:bg-green-600"><b>Refresh Dashboard</b></button>
+                    <button onclick="addRow()" class="text-lg py-3 px-2 bg-green-500 text-white rounded hover:bg-green-600"><b>Add Manual Task</b></button>
                 </div>
             </div>
         
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
-                <p class="mb-1 text-gray-200">Show only:</p>
-                <div class="flex justify-center gap-2">
-                    <button onclick="hideRowsbyDataSource('Jira')" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Tickets</b></button>
-                    <button onclick="hideRowsbyDataSource('Lancom Button')" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Jira</b></button>
-                    <button onclick="hideRowsWithStatus('Waiting on Dev Only')" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev</b></button>
-                    <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)" id="hideTicketsNotFromBoardButton1" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
-                    <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)" id="hideTicketsNotFromBoardButton2" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
+                <p class="mb-1 text-gray-200">Show all:</p>
+                <div class="flex justify-center gap-1">
+                    <button onclick="hideRowsbyDataSource('Jira')" class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Tickets</b></button>
+                    <button onclick="hideRowsbyDataSource('Lancom Button')" class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Jira</b></button>
+                    <button onclick="hideRowsWithStatus('Waiting on Dev Only')" class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Waiting on Dev</b></button>
+                    <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)" id="hideTicketsNotFromBoardButton1" class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
+                    <button onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)" id="hideTicketsNotFromBoardButton2" class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"></button>
                 </div>
             </div>
 
@@ -48,24 +48,27 @@
 
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                 <p class="mb-1 text-gray-200">Hide All:</p>
-                <div class="flex justify-center gap-2">
-                    <button onclick="hideRowsWithStatus('Waiting on Client')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Client</b></button>
-                    <button onclick="hideRowsWithStatus('Waiting on Dev')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Dev</b></button>
-                    <button onclick="hideRowsWithStatus('Waiting on 3rd Party')" class="text-lg p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on 3rd Party</b></button>
+                <div class="flex justify-center gap-1">
+                    <button onclick="hideRowsWithStatus('Waiting on Client')" class="text-lg  py-3 px-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Client</b></button>
+                    <button onclick="hideRowsWithStatus('Waiting on Dev')" class="text-lg  py-3 px-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on Dev</b></button>
+                    <button onclick="hideRowsWithStatus('Waiting on 3rd Party')" class="text-lg py-3 px-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded"><b>Waiting on 3rd Party</b></button>
                 </div>
             </div>
 
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                 <p class="mb-1 text-gray-200">Restore:</p>
-                <div class="flex justify-center gap-2">
-                    <button onclick="unhideAll()" class="text-lg p-3 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide All</b></button>
+                <div class="flex justify-center gap-1">
+                    <button onclick="unhideAll()" class="text-lg  py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"><b>Unhide All</b></button>
                     
                 </div>
             </div>
 
             <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
-                <p class="mb-1 text-gray-200">Misc</p>
-                <button onclick="sort()" class="text-lg py-3 px-6 bg-white text-black rounded hover:bg-grey-200 disabled"><b>Sort</b></button>
+                <p class="mb-1 text-gray-200">Sort by</p>
+                <div class="flex justify-center gap-1">
+                    <button onclick="organiseMyList()" class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"><b>My List</b></button>
+                    <button onclick="organiseMyLisByPriority()" class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"><b>Priority</b></button>
+                </div>
            </div>
             
         </div>
