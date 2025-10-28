@@ -39,7 +39,7 @@ function getAllTasks() {
         body: raw,
         redirect: "follow"
     };
-    fetch("https://prod-18.australiasoutheast.logic.azure.com:443/workflows/8ede7348e08746df81513d8b45912c0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9ThA8L_C0klVuBaYpZ_kXvhoHHYLmBVlHnRgFWIxvJo", requestOptions)
+    fetch("https://2e21e621fcf3eae1a4d19e02b3152f.c8.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8ede7348e08746df81513d8b45912c0a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xwP8DXZEU8SsGOtGSxss6jGPScAfmngT_4-bnOr4gk4", requestOptions)
         .then((response) => response.json())
         .then((result) => { 
             // error handling for wrong password provided to PA
