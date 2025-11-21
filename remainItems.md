@@ -6,6 +6,7 @@
 3. Save Manual tasks to local storage ✅
 1. Auto Clear checkmark after 1 day???
 1. Update wallpaper to be infanite
+1. Fix status sort on manual tasks
 
 1. Add support for a 3rd primary board in PA
 1. Swap Collin for Niamh in PA / App
