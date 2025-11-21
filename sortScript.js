@@ -374,3 +374,41 @@ function clearAllSavedTicketData() {
 
     alert("All saved ticket data has been cleared.");
 }
+
+function clearAllTicketNotes() {
+    const confirmed = window.confirm("This will remove every saved note for your tickets. Continue?");
+    if (!confirmed) {
+        return;
+    }
+
+    resetAllTicketNotes();
+
+    const rows = document.querySelectorAll("#resultsTable tbody tr");
+    rows.forEach((row) => {
+        const notesInput = row.querySelector(".meeting-notes input");
+        if (notesInput) {
+            notesInput.value = "";
+        }
+    });
+
+    alert("All saved ticket notes have been cleared.");
+}
+
+function clearAllTicketChecks() {
+    const confirmed = window.confirm("This will uncheck every saved checkbox. Continue?");
+    if (!confirmed) {
+        return;
+    }
+
+    resetAllTicketChecks();
+
+    const rows = document.querySelectorAll("#resultsTable tbody tr");
+    rows.forEach((row) => {
+        const imageElement = row.querySelector(".meeting-notes img");
+        if (imageElement) {
+            imageElement.src = UNCHECKED_ICON_URL;
+        }
+    });
+
+    alert("All checkbox states have been cleared.");
+}

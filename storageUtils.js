@@ -208,6 +208,24 @@ function resetTicketSanityData() {
     }
 }
 
+function resetAllTicketNotes() {
+    try {
+        const ticketKeys = getAllTicketStateKeys();
+        ticketKeys.forEach((key) => updateTicketState(key, { notes: "" }));
+    } catch (error) {
+        console.error("TicketSanity: failed to clear ticket notes", error);
+    }
+}
+
+function resetAllTicketChecks() {
+    try {
+        const ticketKeys = getAllTicketStateKeys();
+        ticketKeys.forEach((key) => updateTicketState(key, { isChecked: false, checkedDate: null }));
+    } catch (error) {
+        console.error("TicketSanity: failed to clear checkbox states", error);
+    }
+}
+
 (function initTicketSanityStorage() {
     try {
         migrateLegacyLocalStorage();
