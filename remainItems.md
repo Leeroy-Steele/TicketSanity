@@ -1,32 +1,31 @@
-## Remaining Items:
+## New ideas: (number = work estimate)
 
-0. Add jira tasks 
-1. Webhook Authentication (Password or restrict users that can hit endpoint?) - ✅
-2. Reduce Webhook payload (Take out contact details)
-3. UI upgrade to allow selection of tech user
-3. UI upgrade to allow entering password
-3. UI upgrade to allow page refresh button
-4. Allow saving on tasklist
-5. Page refresh doesn't remove manualy entered data
-6. Password can be cached in browser to local storage / cookies?
-7. Can create new tickets from manual tasks
-8. Jira 2 column shouldn't be hard coded to PAC tickets. Possibility for additional jira issues? 
+1. Swap Collin for Niamh in PA / App
+1. Clear checkmark master button
+1. Add support for a 3rd primary board in PA
+1. Auto Clear checkmark after 1 day???
+2. Jira 2 column shouldn't be hard coded to PAC tickets. opt for 3 collumn jira tasks with any jira env support in each collumn
+3. Save Manual tasks to local storage
+3. Update UI:
+    * Clear tickets button
+    * Clear notes button
+    * Board filter buttons by Primary boards 1-3
+    * Actionable tasks:
+        * Filter out unactionable statuses
+        * Sort by most actionable status
+    * Create seperate list for hidden idems
+
+4. Option to mark task as `worked on`. Will appear in their own list for a day, regardless of status. Useful for remembering what I have worked on to raise in standup 
+3. Create internal note on ticket from task note
+4. Create ticket from Manual task button
+
+9. Dev mode:
+    * Show jira tasks
+    * Create timeentry from task???
+9. New tickets send alert / notification or higher visibility in dashboard?
+9. Helper modal to show what your board settings are??
+9. Helper modal to select your boards??
 
 
-
-
-## New ideas:
-
-8. make ticket number the unique identifier for local storage - ✅
-7. Hide task for a day  - ✅
-2. Add `my list` (Auto filter and sort)
-
-
-4. Clear checkmark master button
-41. Clear checkmark after 1 day???
-3. Add show secondary boards?
-1. Status filter for `completed`
-5. Clear notes master button?
-6. Option to mark as `worked on` or `resolved`. The latest 5 will appear in their own list, regardless of status, until overriden with a more rent ticket. Useful for remembering what I have worked on to raise in standup 
 
 
