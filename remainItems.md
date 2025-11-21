@@ -1,14 +1,25 @@
 ## New ideas: (number = work estimate)
 
-1. Swap Collin for Niamh in PA / App
-1. Clear checkmark master button
-1. Add support for a 3rd primary board in PA
-1. Auto Clear checkmark after 1 day???
-2. Jira 2 column shouldn't be hard coded to PAC tickets. opt for 3 collumn jira tasks with any jira env support in each collumn
+2. Refactor local storage to have this schema: (values are stringified objects)
+        Key = TicketNumber
+        Value = {
+            isChecked<bool> : false,
+            checkedDate<Date | null>: date,
+            notes<string> : "",
+            hideUntil<Date | null>: date
+        }
+1. Clear notes button
+1. Clear checkmark button
 3. Save Manual tasks to local storage
+1. Auto Clear checkmark after 1 day???
+1. Update wallpaper to be infanite
+
+1. Add support for a 3rd primary board in PA
+1. Swap Collin for Niamh in PA / App
+
+2. Jira 2 column shouldn't be hard coded to PAC tickets. opt for 3 collumn jira tasks with any jira env support in each collumn
+
 3. Update UI:
-    * Clear tickets button
-    * Clear notes button
     * Board filter buttons by Primary boards 1-3
     * Actionable tasks:
         * Filter out unactionable statuses
