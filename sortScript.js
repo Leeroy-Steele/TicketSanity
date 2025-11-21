@@ -350,3 +350,27 @@ function organiseMyLisByPriority() {
     ]);
     sortTableRows("P", null, "decending");
 }
+
+function clearAllSavedTicketData() {
+    const confirmed = window.confirm("This will remove all saved notes, checkbox states, and hidden ticket data. Continue?");
+    if (!confirmed) {
+        return;
+    }
+
+    resetTicketSanityData();
+
+    const rows = document.querySelectorAll("#resultsTable tbody tr");
+    rows.forEach((row) => {
+        const notesInput = row.querySelector(".meeting-notes input");
+        if (notesInput) {
+            notesInput.value = "";
+        }
+
+        const imageElement = row.querySelector(".meeting-notes img");
+        if (imageElement) {
+            imageElement.src = UNCHECKED_ICON_URL;
+        }
+    });
+
+    alert("All saved ticket data has been cleared.");
+}
