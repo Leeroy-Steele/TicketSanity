@@ -2,6 +2,42 @@
 
 let user, password, LancomButtonId, DD4DDId, PrimaryBoard1, PrimaryBoard2, returnHSEIssues, returnCSPIssues, returnPromptIssues;
 
+function attachRowInteractionHandlers(row) {
+    if (!row || row.dataset.interactionBound === "true") {
+        return;
+    }
+
+    const ticketId = row.dataset.ticketId;
+    if (!ticketId) {
+        return;
+    }
+
+    const notesContainer = row.querySelector(".meeting-notes");
+    const notesInput = notesContainer ? notesContainer.querySelector("input") : null;
+    const imageElement = notesContainer ? notesContainer.querySelector("img") : null;
+
+    if (imageElement) {
+        imageElement.style.cursor = "pointer";
+        imageElement.addEventListener("click", function () {
+            const currentState = getTicketState(ticketId);
+            const nextChecked = !currentState.isChecked;
+            const updatedState = updateTicketState(ticketId, {
+                isChecked: nextChecked,
+                checkedDate: nextChecked ? new Date().toISOString() : null,
+            });
+            imageElement.src = updatedState.isChecked ? CHECKED_ICON_URL : UNCHECKED_ICON_URL;
+        });
+    }
+
+    if (notesInput) {
+        notesInput.addEventListener("input", function () {
+            updateTicketState(ticketId, { notes: notesInput.value || "" });
+        });
+    }
+
+    row.dataset.interactionBound = "true";
+}
+
 // Clear old fetched tasks first. Leave manual tasks
 function removeRowsExceptHeaderAndManualTask() {
     const table = document.getElementById("resultsTable");
@@ -301,9 +337,6 @@ function getAllTasks() {
                 }
             });
         })
-        .catch((error) => {
+            rows.forEach((row) => attachRowInteractionHandlers(row));
             console.error(error);
-            // remove spinner
-            document.getElementById("spinnerDiv").style.display = "none";
-        });
 }

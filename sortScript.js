@@ -2,6 +2,13 @@
 
 // Sort tickets by Priority / board / Status
 let sortAscendingOrder = true;
+function escapeAttributeValue(value) {
+    if (value === undefined || value === null) {
+        return "";
+    }
+    return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function sortTableRows(columnName, sortOrder, sortDirection) {
     const table = document.getElementById("resultsTable");
     const tbody = table.tBodies[0];
@@ -227,38 +234,104 @@ function drop(ev) {
 }
 
 // Manually add table rows
-function addRow() {
+function addRow(manualTaskEntry = null) {
     const tableBody = document.getElementById("resultsTable").getElementsByTagName("tbody")[0];
+
+    let ticketId;
+    let state;
+
+    if (manualTaskEntry && manualTaskEntry.ticketId && manualTaskEntry.state) {
+        ticketId = manualTaskEntry.ticketId;
+        state = manualTaskEntry.state;
+    } else {
+        ticketId = generateManualTaskId();
+        state = updateTicketState(ticketId, {
+            isManuallyAddedTask: true,
+            manualTask: { ...DEFAULT_MANUAL_TASK_FIELDS },
+            notes: "",
+            isChecked: false,
+            checkedDate: null,
+        });
+    }
+
+    const manualFields = getManualTaskFieldsFromState(state);
+    const checkboxSrc = state.isChecked ? CHECKED_ICON_URL : UNCHECKED_ICON_URL;
+    const notesValue = state.notes || "";
+    const titleValue = escapeAttributeValue(manualFields.title);
+    const statusValue = escapeAttributeValue(manualFields.status);
+    const priorityValue = escapeAttributeValue(manualFields.priority);
+    const notesAttrValue = escapeAttributeValue(notesValue);
+
     const newRow = document.createElement("tr");
     newRow.classList.add("manualTask");
     newRow.setAttribute("draggable", "true");
     newRow.setAttribute("ondragstart", "drag(event)");
     newRow.setAttribute("ondragover", "allowDrop(event)");
     newRow.setAttribute("ondrop", "drop(event)");
-    const randomNumber = Math.floor(Math.random() * 900) + 100;
-    newRow.id = "row-" + randomNumber;
+    newRow.dataset.ticketId = ticketId;
+    newRow.id = "row-" + ticketId;
 
     newRow.innerHTML = `
-            <td colspan="6" class="p-1 border border-gray-200"><input type="text" placeholder="Task" class="w-full border rounded p-1"></td>
-            <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input type="text" placeholder="..." class="border rounded p-1"></td>
-            <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input style="width: 35px; "type="text" placeholder="..." class="border rounded p-1"></td>
-
+            <td colspan="6" class="p-1 border border-gray-200"><input type="text" data-manual-field="title" placeholder="Task" class="w-full border rounded p-1" value="${titleValue}" /></td>
+            <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input type="text" data-manual-field="status" placeholder="..." class="w-full border rounded p-1" value="${statusValue}" /></td>
+            <td style="width: 50px;" class="p-1 text-center border border-gray-200"><input style="width: 35px;" type="text" data-manual-field="priority" placeholder="..." class="border rounded p-1" value="${priorityValue}" /></td>
 
             <td class="py-1 px-2 text-center meeting-notes border border-gray-200 span">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div onclick="tickBox('tickBoxDiv${randomNumber}')">
-                        <img id="tickBoxDiv${randomNumber}" width="30" height="30" src="https://img.icons8.com/ios/30/checked-2--v3.png" alt="checked-2--v3" />
+                    <div>
+                        <img width="30" height="30" src="${checkboxSrc}" alt="checked-2--v3" />
                     </div>
-                    <input type="text" class="w-full p-1 border rounded" placeholder="..." />
+                    <input type="text" class="w-full p-1 border rounded" placeholder="..." value="${notesAttrValue}" />
                 </div>
             </td>
 
             <td class="p-1 text-center border border-gray-200 action-buttons">
-                <button onclick="deleteRow(${randomNumber})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
-                <button onclick="this.closest('tr').style.display = 'none'" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
+                <button onclick="deleteRow('${ticketId}')" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
+                <button onclick="hideRow('${ticketId}')" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
             </td>
         `;
+
     tableBody.appendChild(newRow);
+    attachManualTaskFieldListeners(newRow);
+    attachRowInteractionHandlers(newRow);
+}
+
+function attachManualTaskFieldListeners(row) {
+    if (!row || row.dataset.manualFieldsBound === "true") {
+        return;
+    }
+
+    const ticketId = row.dataset.ticketId;
+    if (!ticketId) {
+        return;
+    }
+
+    const manualInputs = row.querySelectorAll("[data-manual-field]");
+    manualInputs.forEach((input) => {
+        input.addEventListener("input", function () {
+            const fieldName = input.getAttribute("data-manual-field");
+            if (!fieldName) {
+                return;
+            }
+            updateManualTaskFields(ticketId, { [fieldName]: input.value || "" });
+        });
+    });
+
+    row.dataset.manualFieldsBound = "true";
+}
+
+function restoreManualTasks() {
+    const manualEntries = getAllManualTaskEntries();
+    if (!manualEntries || manualEntries.length === 0) {
+        return;
+    }
+    manualEntries.forEach((entry) => addRow(entry));
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", restoreManualTasks);
+} else {
+    restoreManualTasks();
 }
 
 function hideRow(index) {
@@ -371,6 +444,9 @@ function clearAllSavedTicketData() {
             imageElement.src = UNCHECKED_ICON_URL;
         }
     });
+
+    const manualRows = document.querySelectorAll("#resultsTable tbody tr.manualTask");
+    manualRows.forEach((row) => row.remove());
 
     alert("All saved ticket data has been cleared.");
 }

@@ -1,5 +1,12 @@
 const CHECKED_ICON_URL = "https://img.icons8.com/color/30/checked-checkbox.png";
 const UNCHECKED_ICON_URL = "https://img.icons8.com/ios/30/checked-2--v3.png";
+const MANUAL_TASK_KEY_PREFIX = "Mn-";
+
+const DEFAULT_MANUAL_TASK_FIELDS = Object.freeze({
+    title: "",
+    status: "",
+    priority: "",
+});
 
 const DEFAULT_TICKET_STATE = Object.freeze({
     isChecked: false,
@@ -7,6 +14,7 @@ const DEFAULT_TICKET_STATE = Object.freeze({
     notes: "",
     hideUntil: null,
     isManuallyAddedTask: false,
+    manualTask: null,
 });
 
 function cloneDefaultState() {
@@ -43,12 +51,30 @@ function normalizeTicketState(state) {
         return cloneDefaultState();
     }
 
+    const base = cloneDefaultState();
+    const normalizedManualTask = state.manualTask ? normalizeManualTaskFields(state.manualTask) : null;
+
     return {
+        ...base,
+        ...state,
         isChecked: Boolean(state.isChecked),
         checkedDate: normalizeDateValue(state.checkedDate),
-        notes: typeof state.notes === "string" ? state.notes : "",
+        notes: typeof state.notes === "string" ? state.notes : base.notes,
         hideUntil: normalizeDateValue(state.hideUntil),
-        isManuallyAddedTask: Boolean(state.isManuallyAddedTask),
+        isManuallyAddedTask: state.isManuallyAddedTask === undefined ? base.isManuallyAddedTask : Boolean(state.isManuallyAddedTask),
+        manualTask: normalizedManualTask,
+    };
+}
+
+function normalizeManualTaskFields(fields) {
+    if (!fields || typeof fields !== "object") {
+        return { ...DEFAULT_MANUAL_TASK_FIELDS };
+    }
+
+    return {
+        title: typeof fields.title === "string" ? fields.title : DEFAULT_MANUAL_TASK_FIELDS.title,
+        status: typeof fields.status === "string" ? fields.status : DEFAULT_MANUAL_TASK_FIELDS.status,
+        priority: typeof fields.priority === "string" ? fields.priority : DEFAULT_MANUAL_TASK_FIELDS.priority,
     };
 }
 
@@ -198,6 +224,50 @@ function migrateLegacyLocalStorage() {
     Object.entries(aggregatedState).forEach(([ticketId, state]) => {
         setTicketState(ticketId, state);
     });
+}
+
+function generateManualTaskId() {
+    let candidate = null;
+    let attempts = 0;
+
+    do {
+        const randomNumber = Math.floor(10000 + Math.random() * 90000);
+        candidate = `${MANUAL_TASK_KEY_PREFIX}${randomNumber}`;
+        attempts += 1;
+        if (!localStorage.getItem(candidate)) {
+            return candidate;
+        }
+    } while (attempts < 25);
+
+    return `${MANUAL_TASK_KEY_PREFIX}${Date.now().toString().slice(-5)}`;
+}
+
+function isManualTaskKey(key) {
+    return typeof key === "string" && key.startsWith(MANUAL_TASK_KEY_PREFIX);
+}
+
+function getManualTaskFieldsFromState(state) {
+    return normalizeManualTaskFields(state?.manualTask);
+}
+
+function updateManualTaskFields(ticketId, fields) {
+    if (!ticketId) {
+        return null;
+    }
+    const currentState = getTicketState(ticketId);
+    const currentFields = normalizeManualTaskFields(currentState.manualTask);
+    const nextFields = normalizeManualTaskFields({ ...currentFields, ...fields });
+    return updateTicketState(ticketId, {
+        isManuallyAddedTask: true,
+        manualTask: nextFields,
+    });
+}
+
+function getAllManualTaskEntries() {
+    return getAllTicketStateKeys()
+        .filter((key) => isManualTaskKey(key))
+        .map((key) => ({ ticketId: key, state: getTicketState(key) }))
+        .filter((entry) => entry.state.isManuallyAddedTask);
 }
 
 function resetTicketSanityData() {

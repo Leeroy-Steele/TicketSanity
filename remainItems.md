@@ -1,9 +1,9 @@
 ## New ideas: (number = work estimate)
 
 2. Refactor local storage to have new schema ✅
-1. Clear notes button 
-1. Clear checkmark button 
-3. Save Manual tasks to local storage
+1. Clear notes button ✅
+1. Clear checkmark button ✅
+3. Save Manual tasks to local storage ✅
 1. Auto Clear checkmark after 1 day???
 1. Update wallpaper to be infanite
 
