@@ -348,6 +348,4 @@ function getAllTasks() {
                 }
             });
         });
-    // rows.forEach((row) => attachRowInteractionHandlers(row));
-    // console.error(error);
 }
