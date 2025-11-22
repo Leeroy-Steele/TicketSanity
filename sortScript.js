@@ -9,6 +9,42 @@ function escapeAttributeValue(value) {
     return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function isManualTaskRow(row) {
+    return Boolean(row && row.classList && row.classList.contains("manualTask"));
+}
+
+function getManualFieldValue(row, fieldName) {
+    if (!isManualTaskRow(row)) {
+        return null;
+    }
+    const input = row.querySelector(`[data-manual-field="${fieldName}"]`);
+    return input ? input.value.trim() : "";
+}
+
+function getColumnValue(row, columnName, columnIndex) {
+    if (!row) {
+        return "";
+    }
+
+    if (isManualTaskRow(row)) {
+        if (columnName === "Status") {
+            return getManualFieldValue(row, "status");
+        }
+        if (columnName === "P") {
+            return getManualFieldValue(row, "priority");
+        }
+        if (columnName === "Board") {
+            return "Manual Task";
+        }
+    }
+
+    const cell = row.cells[columnIndex];
+    if (!cell) {
+        return "";
+    }
+    return cell.innerText ? cell.innerText.trim() : "";
+}
+
 function sortTableRows(columnName, sortOrder, sortDirection) {
     const table = document.getElementById("resultsTable");
     const tbody = table.tBodies[0];
@@ -36,8 +72,8 @@ function sortTableRows(columnName, sortOrder, sortDirection) {
 
     // Sort rows by the specified column
     rows.sort((rowA, rowB) => {
-        const cellA = rowA.cells[columnIndex]?.innerText.trim(); // row.cells[6] will sort by Board name for example
-        const cellB = rowB.cells[columnIndex]?.innerText.trim();
+        const valueA = getColumnValue(rowA, columnName, columnIndex);
+        const valueB = getColumnValue(rowB, columnName, columnIndex);
 
         // Handle numeric sorting for the "P" column
         if (columnName === "P") {
@@ -45,24 +81,33 @@ function sortTableRows(columnName, sortOrder, sortDirection) {
                 sortAscendingOrder = true;
             }
 
-            const numA = parseFloat(cellA) || 0; // Convert to number or default to 0
-            const numB = parseFloat(cellB) || 0;
+            const numA = parseFloat(valueA) || 0; // Convert to number or default to 0
+            const numB = parseFloat(valueB) || 0;
 
             // Sort numerically
             return sortAscendingOrder ? numA - numB : numB - numA;
         }
 
+        if (columnName === "Status") {
+            const manualBlankA = isManualTaskRow(rowA) && valueA.length === 0;
+            const manualBlankB = isManualTaskRow(rowB) && valueB.length === 0;
+
+            if (manualBlankA !== manualBlankB) {
+                return manualBlankA ? -1 : 1;
+            }
+        }
+
         // Testing this *****************************
-        else if (sortOrder) {
-            const indexA = sortOrder.indexOf(cellA);
-            const indexB = sortOrder.indexOf(cellB);
+        if (sortOrder) {
+            const indexA = sortOrder.indexOf(valueA);
+            const indexB = sortOrder.indexOf(valueB);
 
             // If a status is not in sortOrder, move it to the end (assign a large index)
             return (indexA === -1 ? sortOrder.length : indexA) - (indexB === -1 ? sortOrder.length : indexB);
         }
 
         // Default to text sorting
-        return sortAscendingOrder ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+        return sortAscendingOrder ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
     });
 
     // Append sorted rows back to tbody
@@ -107,6 +152,22 @@ function hideRowsbyDataSource(source) {
             }
         });
     }
+}
+
+function showOnlyOfflineTasks() {
+    const table = document.getElementById("resultsTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody?.rows || []);
+
+    if (rows.length === 0) {
+        return;
+    }
+
+    rows.forEach((row) => {
+        const ticketId = row.dataset.ticketId || "";
+        const isOfflineRow = typeof ticketId === "string" && ticketId.startsWith(MANUAL_TASK_KEY_PREFIX);
+        row.style.display = isOfflineRow ? "" : "none";
+    });
 }
 
 // hide by Status
@@ -180,8 +241,12 @@ function hideRowsWithStatus(statusToHide) {
     }
 }
 
-function hideTicketsNotFromBoard(boardToShow) {
-    unhideAll();
+function hideTicketsNotFromBoard(boardToShow, options = {}) {
+    const { skipUnhide = false } = options || {};
+
+    if (!skipUnhide) {
+        unhideAll();
+    }
 
     const table = document.getElementById("resultsTable");
     const tbody = table.tBodies[0];
@@ -189,6 +254,10 @@ function hideTicketsNotFromBoard(boardToShow) {
 
     if (boardToShow === PrimaryBoard1.BoardName) {
         Array.from(rows).forEach((row) => {
+            if (isManualTaskRow(row)) {
+                row.style.display = "none";
+                return;
+            }
             const boardCell = row.cells[5]; // Index of the Status column
             if (boardCell && boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard1.BoardName.substring(0, 6)) {
                 row.style.display = "none"; // Hide the row
@@ -196,12 +265,30 @@ function hideTicketsNotFromBoard(boardToShow) {
         });
     } else if (boardToShow === PrimaryBoard2.BoardName) {
         Array.from(rows).forEach((row) => {
+            if (isManualTaskRow(row)) {
+                row.style.display = "none";
+                return;
+            }
             const boardCell = row.cells[5]; // Index of the Status column
             if (boardCell && boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard2.BoardName.substring(0, 6)) {
                 row.style.display = "none"; // Hide the row
             }
         });
     }
+}
+
+function showActionableAllBoards() {
+    unhideAll();
+    organiseMyList();
+}
+
+function showActionableBoard(boardName) {
+    if (!boardName) {
+        return;
+    }
+    unhideAll();
+    organiseMyList();
+    hideTicketsNotFromBoard(boardName, { skipUnhide: true });
 }
 
 // Drag and drop table rows
@@ -367,7 +454,7 @@ function hideForADay(index) {
     }
 
     const date = new Date();
-    date.setDate(date.getDate() + 1); // Add 1 day
+    date.setHours(date.getHours() + 12); // Add 12 hours (0.5 days)
 
     updateTicketState(ticketId, { hideUntil: date.toISOString() });
 
@@ -487,4 +574,23 @@ function clearAllTicketChecks() {
     });
 
     alert("All checkbox states have been cleared.");
+}
+
+function clearAllTicketSleep() {
+    const confirmed = window.confirm("This will unhide every sleeping ticket. Continue?");
+    if (!confirmed) {
+        return;
+    }
+
+    const ticketKeys = getAllTicketStateKeys();
+    ticketKeys.forEach((key) => updateTicketState(key, { hideUntil: null }));
+
+    const rows = document.querySelectorAll("#resultsTable tbody tr");
+    rows.forEach((row) => {
+        if (row) {
+            row.style.display = "";
+        }
+    });
+
+    alert("All sleeping tickets have been restored.");
 }

@@ -106,7 +106,19 @@ function getAllTasks() {
             // update Dom with board preferences:
             document.getElementById("hideTicketsNotFromBoardButton1").innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`;
             document.getElementById("hideTicketsNotFromBoardButton2").innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`;
+            document.getElementById("showActionableBoardButton1").innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`;
+            document.getElementById("showActionableBoardButton2").innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`;
             document.getElementById("spinnerDiv").style.display = "none";
+
+            // Remove board preference buttons if no board selected
+            if (PrimaryBoard1.BoardName === "None") {
+                document.getElementById("hideTicketsNotFromBoardButton1").style.display = "none";
+                document.getElementById("showActionableBoardButton1").style.display = "none";
+            }
+            if (PrimaryBoard2.BoardName === "None") {
+                document.getElementById("hideTicketsNotFromBoardButton2").style.display = "none";
+                document.getElementById("showActionableBoardButton2").style.display = "none";
+            }
 
             // Refactor jira issues payload
             const jiraResults = result.jiraResults.map((issue) => {
@@ -219,9 +231,8 @@ function getAllTasks() {
                             </div>
                         </td>
 
-                        <td class="py-1 px-2 text-center border border-gray-200 action-buttons">
-                            <button onclick="hideForADay(${index})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Sleep 24hrs</button>
-                            <button onclick="hideRow(${index})" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Hide</button>
+                        <td class="text-center border border-gray-200 action-buttons">
+                            <button onclick="hideForADay(${index})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Sleep</button>
                         </td>
 
                     </tr>
@@ -336,7 +347,7 @@ function getAllTasks() {
                     });
                 }
             });
-        })
-            rows.forEach((row) => attachRowInteractionHandlers(row));
-            console.error(error);
+        });
+    // rows.forEach((row) => attachRowInteractionHandlers(row));
+    // console.error(error);
 }

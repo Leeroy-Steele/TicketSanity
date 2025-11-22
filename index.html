@@ -45,27 +45,27 @@
         <div id="passwordEnteredDiv">
             <div class="flex justify-center gap-2 m-2">
                 <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
-                    <p class="mb-1 text-gray-200">Add / Refresh:</p>
+                    <p class="mb-1 text-gray-200">Tasks</p>
                     <div class="flex justify-center gap-1">
                         <button
                             onclick="getAllTasks()"
                             class="text-lg py-3 px-2 bg-green-500 text-white rounded hover:bg-green-600"
                         >
-                            <b>Refresh Dashboard</b>
+                            <b>Refresh Online</b>
                         </button>
                         <button
                             onclick="addRow()"
                             class="text-lg py-3 px-2 bg-green-500 text-white rounded hover:bg-green-600"
                         >
-                            <b>Add Manual Task</b>
+                            <b>Add Offline</b>
                         </button>
                     </div>
                 </div>
 
                 <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
-                    <p class="mb-1 text-gray-200">Show all:</p>
+                    <p class="mb-1 text-gray-200">Show</p>
                     <div class="flex justify-center gap-1">
-                        <button
+                        <!-- <button
                             onclick="hideRowsbyDataSource('Jira')"
                             class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
@@ -76,12 +76,18 @@
                             class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
                             <b>Jira</b>
-                        </button>
-                        <button
+                        </button> -->
+                        <!-- <button
                             onclick="hideRowsWithStatus('Waiting on Dev Only')"
                             class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
                             <b>Waiting on Dev</b>
+                        </button> -->
+                        <button
+                            onclick="unhideAll()"
+                            class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            <b>Everything</b>
                         </button>
                         <button
                             onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)"
@@ -93,6 +99,12 @@
                             id="hideTicketsNotFromBoardButton2"
                             class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         ></button>
+                        <button
+                            onclick="showOnlyOfflineTasks()"
+                            class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            <b>Offline</b>
+                        </button>
                     </div>
                 </div>
 
@@ -102,7 +114,7 @@
                         style="color: antiquewhite"
                         class="text-center text-2xl m-3 color-white"
                     >
-                        TicketSanity
+                        Task List
                     </h2>
                     <div class="mr-6">
                         <img
@@ -116,6 +128,36 @@
                 </div>
 
                 <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
+                    <p class="mb-1 text-gray-200">Show actionable tasks only</p>
+                    <div class="flex justify-center gap-1">
+                        <button
+                            onclick="showActionableAllBoards()"
+                            class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
+                        >
+                            <b>All Boards</b>
+                        </button>
+                        <button
+                            onclick="showActionableBoard(PrimaryBoard1.BoardName)"
+                            id="showActionableBoardButton1"
+                            class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
+                        >
+                        </button>
+                        <button
+                            onclick="showActionableBoard(PrimaryBoard2.BoardName)"
+                            id="showActionableBoardButton2"
+                            class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
+                        >
+                        </button>
+                        <!-- <button
+                            onclick="organiseMyLisByPriority()"
+                            class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
+                        >
+                            <b>Priority</b>
+                        </button> -->
+                    </div>
+                </div>
+
+                <!-- <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
                     <p class="mb-1 text-gray-200">Hide All:</p>
                     <div class="flex justify-center gap-1">
                         <button
@@ -137,52 +179,34 @@
                             <b>Waiting on 3rd Party</b>
                         </button>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
-                    <p class="mb-1 text-gray-200">State:</p>
+                    <p class="mb-1 text-gray-200">Clear local storage</p>
                     <div class="flex justify-center gap-1">
                         <button
-                            onclick="unhideAll()"
-                            class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            onclick="clearAllSavedTicketData()"
+                            class="text-lg py-3 px-2 bg-red-400 text-white rounded hover:bg-red-700"
                         >
-                            <b>Unhide All</b>
+                            <b>All Data</b>
                         </button>
                         <button
                             onclick="clearAllTicketNotes()"
-                            class="text-lg py-3 px-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                            class="text-lg py-3 px-2 bg-red-400 text-white rounded hover:bg-red-700"
                         >
-                            <b>Clear Notes</b>
+                            <b>Notes</b>
                         </button>
                         <button
                             onclick="clearAllTicketChecks()"
-                            class="text-lg py-3 px-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                            class="text-lg py-3 px-2 bg-red-400 text-white rounded hover:bg-red-700"
                         >
-                            <b>Clear Checkboxes</b>
+                            <b>Checkboxes</b>
                         </button>
                         <button
-                            onclick="clearAllSavedTicketData()"
-                            class="text-lg py-3 px-2 bg-red-600 text-white rounded hover:bg-red-700"
+                            onclick="clearAllTicketSleep()"
+                            class="text-lg py-3 px-2 bg-red-400 text-white rounded hover:bg-red-700"
                         >
-                            <b>Delete Saved Data</b>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="border border-dashed border-gray-500 text-xs text-center p-2 rounded-lg">
-                    <p class="mb-1 text-gray-200">Sort by</p>
-                    <div class="flex justify-center gap-1">
-                        <button
-                            onclick="organiseMyList()"
-                            class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
-                        >
-                            <b>My List</b>
-                        </button>
-                        <button
-                            onclick="organiseMyLisByPriority()"
-                            class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
-                        >
-                            <b>Priority</b>
+                            <b>Sleep</b>
                         </button>
                     </div>
                 </div>
@@ -202,9 +226,9 @@
                             >
                                 Contact
                             </th>
-                            <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Tech Portal</th>
-                            <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 1</th>
-                            <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira 2</th>
+                            <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Tech Portal Link</th>
+                            <th class="py-1 px-2 text-center border border-gray-300 jira-columns">Jira Link</th>
+                            <th class="py-1 px-2 text-center border border-gray-300 jira-columns">PAC Link</th>
                             <th
                                 onclick="sortTableRows('Board')"
                                 class="py-1 px-2 text-center border border-gray-300 jira-columns"
@@ -224,7 +248,7 @@
                                 P
                             </th>
                             <th class="py-1 px-2 text-center meeting-notes border border-gray-300">Notes</th>
-                            <th class="py-1 px-2 text-center border border-gray-300">Actions</th>
+                            <th class="py-1 px-0.5 text-center border border-gray-300">Actions</th>
                             <th style="display: none">Board</th>
                         </tr>
                     </thead>
@@ -316,7 +340,7 @@
                                         class="name-button px-6 py-4 text-lg text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white"
                                         data-name="Collin"
                                     >
-                                        Collin
+                                        Niamh
                                     </button>
                                 </div>
 
