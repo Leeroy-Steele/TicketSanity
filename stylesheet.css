@@ -3,8 +3,9 @@ h2 {
 }
 
 body {
-    background-image: url("https://i.imgur.com/WNqOEoF.png");
-    background-size: cover;
+    /* background-image: url("https://i.imgur.com/WNqOEoF.png"); */
+    background-image: url("./Background.png");
+    background-size: repeat;
     /* background: linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url('https://i.imgur.com/wUousYb.png'); */
 }
 
