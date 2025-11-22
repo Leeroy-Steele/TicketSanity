@@ -155,6 +155,7 @@ function hideRowsbyDataSource(source) {
 }
 
 function showOnlyOfflineTasks() {
+    unhideAll();
     const table = document.getElementById("resultsTable");
     const tbody = table.tBodies[0];
     const rows = Array.from(tbody?.rows || []);
@@ -166,7 +167,14 @@ function showOnlyOfflineTasks() {
     rows.forEach((row) => {
         const ticketId = row.dataset.ticketId || "";
         const isOfflineRow = typeof ticketId === "string" && ticketId.startsWith(MANUAL_TASK_KEY_PREFIX);
-        row.style.display = isOfflineRow ? "" : "none";
+        if (!isOfflineRow) {
+            row.style.display = "none";
+            return;
+        }
+
+        const state = getTicketState(ticketId);
+        const isHidden = shouldHideTicket(ticketId, state);
+        row.style.display = isHidden ? "none" : "";
     });
 }
 
@@ -463,16 +471,22 @@ function hideForADay(index) {
 }
 
 function unhideAll() {
-    const ticketKeys = getAllTicketStateKeys();
-    ticketKeys.forEach((key) => {
-        const state = getTicketState(key);
-        if (state.hideUntil) {
-            updateTicketState(key, { hideUntil: null });
+    const rows = document.querySelectorAll("#resultsTable tbody tr");
+    rows.forEach((row) => {
+        if (!row) {
+            return;
         }
-    });
 
-    const rows = document.querySelectorAll("tr");
-    rows.forEach((row) => (row.style.display = ""));
+        const ticketId = row.dataset.ticketId;
+        if (!ticketId) {
+            row.style.display = "";
+            return;
+        }
+
+        const state = getTicketState(ticketId);
+        const isHidden = shouldHideTicket(ticketId, state);
+        row.style.display = isHidden ? "none" : "";
+    });
 }
 
 function organiseMyList() {
