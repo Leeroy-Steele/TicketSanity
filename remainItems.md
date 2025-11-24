@@ -2,7 +2,7 @@
 
 2. Pac column shouldn't be hard coded to PAC tickets. opt for 3 collumn jira tasks with any jira env support in each collumn
 1. Add support for a 3rd primary board in PA
-1. Swap Collin for Niamh in PA / App
+1. Swap Collin for Niamh in PA / App ✅
 
 
 ---
