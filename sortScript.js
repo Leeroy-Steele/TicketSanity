@@ -68,8 +68,6 @@ function sortTableRows(columnName, sortOrder, sortDirection) {
         return;
     }
 
-    console.log(`Sorting by column: ${columnName} (Index: ${columnIndex})`);
-
     // Sort rows by the specified column
     rows.sort((rowA, rowB) => {
         const valueA = getColumnValue(rowA, columnName, columnIndex);
@@ -137,15 +135,12 @@ function hideRowsbyDataSource(source) {
     const rows = tbody?.rows || [];
 
     if (source === "Lancom Button") {
-        console.log("hide Lancom Button rows");
         Array.from(rows).forEach((row) => {
             if (row.classList.contains("ticketRow")) {
                 row.style.display = "none"; // Hide the row
             }
         });
     } else if (source === "Jira") {
-        console.log("Hide Jira rows");
-
         Array.from(rows).forEach((row) => {
             if (row.classList.contains("jiraRow")) {
                 row.style.display = "none"; // Hide the row
@@ -185,7 +180,6 @@ function hideRowsWithStatus(statusToHide) {
     const rows = tbody?.rows || [];
 
     if (statusToHide === "Waiting on Client") {
-        console.log("Waiting on Client");
         Array.from(rows).forEach((row) => {
             let statusCell = row.cells[6]; // Index of the Status column
             if (statusCell === undefined) {
@@ -203,7 +197,6 @@ function hideRowsWithStatus(statusToHide) {
             }
         });
     } else if (statusToHide === "Waiting on 3rd Party") {
-        console.log("Waiting on 3rd Party");
         Array.from(rows).forEach((row) => {
             let statusCell = row.cells[6]; // Index of the Status column
             if (statusCell === undefined) {
@@ -215,8 +208,6 @@ function hideRowsWithStatus(statusToHide) {
             }
         });
     } else if (statusToHide === "Waiting on Dev") {
-        console.log("Hide waiting on dev tasks");
-
         Array.from(rows).forEach((row) => {
             let statusCell = row.cells[6]; // Index of the Status column
             if (statusCell === undefined) {
@@ -233,7 +224,6 @@ function hideRowsWithStatus(statusToHide) {
         });
     } else if (statusToHide === "Waiting on Dev Only") {
         unhideAll();
-        console.log("Waiting on Dev only");
         Array.from(rows).forEach((row) => {
             const statusCell = row.cells[6]; // Index of the Status column
             if (
@@ -260,25 +250,25 @@ function hideTicketsNotFromBoard(boardToShow, options = {}) {
     const tbody = table.tBodies[0];
     const rows = tbody?.rows || [];
 
-    if (boardToShow === PrimaryBoard1.BoardName) {
+    if (boardToShow === PrimaryBoard1?.BoardName) {
         Array.from(rows).forEach((row) => {
             if (isManualTaskRow(row)) {
                 row.style.display = "none";
                 return;
             }
             const boardCell = row.cells[5]; // Index of the Status column
-            if (boardCell && boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard1.BoardName.substring(0, 6)) {
+            if (boardCell && boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard1?.BoardName.substring(0, 6)) {
                 row.style.display = "none"; // Hide the row
             }
         });
-    } else if (boardToShow === PrimaryBoard2.BoardName) {
+    } else if (boardToShow === PrimaryBoard2?.BoardName) {
         Array.from(rows).forEach((row) => {
             if (isManualTaskRow(row)) {
                 row.style.display = "none";
                 return;
             }
             const boardCell = row.cells[5]; // Index of the Status column
-            if (boardCell && boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard2.BoardName.substring(0, 6)) {
+            if (boardCell && boardCell.innerText.trim().substring(0, 6) !== PrimaryBoard2?.BoardName.substring(0, 6)) {
                 row.style.display = "none"; // Hide the row
             }
         });

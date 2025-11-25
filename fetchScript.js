@@ -104,18 +104,23 @@ function getAllTasks() {
             returnPromptIssues = result.memberJiraBoardPreferences.returnPromptIssues;
 
             // update Dom with board preferences:
-            document.getElementById("hideTicketsNotFromBoardButton1").innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`;
-            document.getElementById("hideTicketsNotFromBoardButton2").innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`;
-            document.getElementById("showActionableBoardButton1").innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`;
-            document.getElementById("showActionableBoardButton2").innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`;
+            if(PrimaryBoard1){
+                document.getElementById("hideTicketsNotFromBoardButton1").innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`;
+                document.getElementById("showActionableBoardButton1").innerHTML = `<b>${PrimaryBoard1.ShortBoardName}</b>`;
+            }
+            if(PrimaryBoard2){
+                document.getElementById("hideTicketsNotFromBoardButton2").innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`;
+                document.getElementById("showActionableBoardButton2").innerHTML = `<b>${PrimaryBoard2.ShortBoardName}</b>`;
+            }
+            
             document.getElementById("spinnerDiv").style.display = "none";
 
             // Remove board preference buttons if no board selected
-            if (PrimaryBoard1.BoardName === "None") {
+            if (!PrimaryBoard1 || PrimaryBoard1.BoardName === "None") {
                 document.getElementById("hideTicketsNotFromBoardButton1").style.display = "none";
                 document.getElementById("showActionableBoardButton1").style.display = "none";
             }
-            if (PrimaryBoard2.BoardName === "None") {
+            if (!PrimaryBoard2 || PrimaryBoard2.BoardName === "None") {
                 document.getElementById("hideTicketsNotFromBoardButton2").style.display = "none";
                 document.getElementById("showActionableBoardButton2").style.display = "none";
             }
@@ -193,8 +198,8 @@ function getAllTasks() {
             sortedTickets.forEach((ticket, index) => {
                 // Filter out tickets that are not relevant to me
                 if (
-                    ticket.boardName === PrimaryBoard1.BoardName ||
-                    ticket.boardName === PrimaryBoard2.BoardName ||
+                    ticket.boardName === PrimaryBoard1?.BoardName ||
+                    ticket.boardName === PrimaryBoard2?.BoardName ||
                     (ticket.assignedMembers != [] && ticket.assignedMembers.find((member) => member.id === LancomButtonId)) ||
                     (ticket.assignedMembers != [] && ticket.assignedMembers.find((member) => member.id === DD4DDId))
                 ) {
@@ -204,7 +209,6 @@ function getAllTasks() {
                     let styleText = "";
 
                     if (isHidden) {
-                        console.log("Hiding this one until the date is reached: " + ticketId);
                         styleText = "none";
                     }
 

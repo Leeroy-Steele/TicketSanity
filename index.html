@@ -72,12 +72,12 @@
                             <b>Everything</b>
                         </button>
                         <button
-                            onclick="hideTicketsNotFromBoard(`${PrimaryBoard1.BoardName}`)"
+                            onclick="hideTicketsNotFromBoard(`${PrimaryBoard1?.BoardName}`)"
                             id="hideTicketsNotFromBoardButton1"
                             class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         ></button>
                         <button
-                            onclick="hideTicketsNotFromBoard(`${PrimaryBoard2.BoardName}`)"
+                            onclick="hideTicketsNotFromBoard(`${PrimaryBoard2?.BoardName}`)"
                             id="hideTicketsNotFromBoardButton2"
                             class="text-lg py-3 px-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         ></button>
@@ -119,13 +119,13 @@
                             <b>All Boards</b>
                         </button>
                         <button
-                            onclick="showActionableBoard(PrimaryBoard1.BoardName)"
+                            onclick="showActionableBoard(PrimaryBoard1?.BoardName)"
                             id="showActionableBoardButton1"
                             class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
                         >
                         </button>
                         <button
-                            onclick="showActionableBoard(PrimaryBoard2.BoardName)"
+                            onclick="showActionableBoard(PrimaryBoard2?.BoardName)"
                             id="showActionableBoardButton2"
                             class="text-lg py-3 px-2 bg-white text-black rounded hover:bg-grey-200 disabled"
                         >

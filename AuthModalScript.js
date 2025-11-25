@@ -10,7 +10,6 @@
       button.addEventListener('click', () => {
         const selectedName = button.getAttribute('data-name');
         selectedNameInput.value = selectedName; // Set the hidden input value
-        console.log(`Selected Name: ${selectedName}`);
       });
     });
 
