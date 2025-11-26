@@ -170,11 +170,7 @@ function getAllTasks() {
                             : `<a href="https://cloud.lancom.tech/tech/tickets/${ticket.id}" class="text-blue-600 hover:underline">${ticket.id}</a>`,
                     contactName: ticket.contact !== null ? ticket.contact.name : "",
                     boardName:
-                        ticket.board.name === "Prompt Service Board"
-                            ? ticket.board.name.substring(0, 6)
-                            : ticket.board.name === "HSE Connect Service Board"
-                            ? ticket.board.name.substring(0, 11)
-                            : ticket.board.name,
+                        ticket.board.name,
                     priorityName: ticket.priority.name.substring(9, 10),
                     assignedMembers: ticket.assignedMembers,
                     CIJiraLink:
